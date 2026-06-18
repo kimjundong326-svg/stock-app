@@ -424,7 +424,12 @@
             '<div class="drag-handle" id="handle-' + stock.ticker + '">⠿</div>';
 
           // 카드 탭 → 상세 이동 (편집 모드 아닐 때만)
-          card.addEventListener('click', function() {
+          // iOS 홈화면 웹앱에서 click 대신 touchend 사용
+          card.addEventListener('touchend', function(e) {
+            // 드래그 핸들 터치는 무시
+            if (e.target.classList.contains('drag-handle')) return;
+            // 삭제 버튼 터치는 무시
+            if (e.target.classList.contains('delete-btn')) return;
             if (!isEditMode) openDetail(stock.ticker, stock.name);
           });
 
