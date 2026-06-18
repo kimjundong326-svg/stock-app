@@ -574,8 +574,16 @@
         dChange.className = 'detail-change down';
       }
 
-      // ── 시가 ──
+      // ── 시가 (quotes 배열 첫 값으로 보완) ──
       var openPrice = meta.regularMarketOpen || 0;
+      if (!openPrice || openPrice === 0) {
+        // 오늘 첫 번째 유효한 종가값으로 대체
+        for (var oi = 0; oi < closes.length; oi++) {
+          if (closes[oi] !== null && closes[oi] !== undefined) {
+            openPrice = closes[oi]; break;
+          }
+        }
+      }
       document.getElementById('d-open').textContent = openPrice > 0 ? '$' + openPrice.toFixed(2) : '—';
 
       // ── 전일 종가 ──
@@ -591,20 +599,17 @@
         ? (vol >= 1e9 ? (vol/1e9).toFixed(1)+'B' : vol >= 1e6 ? (vol/1e6).toFixed(1)+'M' : (vol/1e3).toFixed(0)+'K')
         : '—';
 
-      // ── 시가총액 ──
-      // Yahoo Finance v8에서 sharesOutstanding × 현재가로 계산
-      var mktcap = meta.marketCap || null;
-      if (!mktcap && meta.sharesOutstanding) {
+      // ── 시가총액 (내장 데이터 사용) ──
+      var mktcap = getStockMktcap(ticker);
+      // Yahoo에서 더 정확한 값 오면 덮어쓰기
+      if (meta.marketCap && meta.marketCap > 0) mktcap = meta.marketCap;
+      else if (meta.sharesOutstanding && meta.sharesOutstanding > 0) {
         mktcap = price * meta.sharesOutstanding;
       }
-      document.getElementById('d-mktcap').textContent = mktcap && mktcap > 0
-        ? (mktcap >= 1e12 ? '$'+(mktcap/1e12).toFixed(2)+'T'
-          : mktcap >= 1e9  ? '$'+(mktcap/1e9).toFixed(1)+'B'
-          : '$'+(mktcap/1e6).toFixed(0)+'M')
-        : '—';
+      document.getElementById('d-mktcap').textContent = formatMktcap(mktcap);
 
-      // ── S&P 500 순위 ──
-      document.getElementById('d-rank').textContent = getSpRank(ticker, mktcap);
+      // ── S&P 500 순위 (내장 데이터) ──
+      document.getElementById('d-rank').textContent = getSpRank(ticker);
 
       // ── SVG 차트 ──
       var validCloses = closes.filter(function(v) { return v !== null && v !== undefined; });
