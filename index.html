@@ -27,7 +27,6 @@
       padding-bottom: 80px;
     }
 
-    /* ── 헤더 ── */
     .header {
       padding: 52px 20px 16px;
       background: #ffffff;
@@ -39,12 +38,10 @@
     .header-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
     .header-title span { color: var(--accent); }
 
-    /* ── 탭 ── */
     .tabs { background: #ffffff; display: flex; gap: 6px; padding: 12px 20px 0; }
     .tab { padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #ffffff; color: var(--subtext); }
     .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-    /* ── 갱신 버튼 ── */
     .refresh-btn {
       margin: 16px 20px 0; width: calc(100% - 40px); padding: 13px;
       background: var(--accent); border: none; border-radius: 14px;
@@ -57,7 +54,6 @@
     .spinning { display: inline-block; animation: spin 0.8s linear infinite; }
     .last-update { text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px; }
 
-    /* ── 요약 카드 ── */
     .summary-card {
       margin: 12px 20px; background: var(--card);
       border: 1px solid var(--border); border-radius: 20px;
@@ -75,12 +71,9 @@
     .stat-value.up   { color: var(--green); }
     .stat-value.down { color: var(--red); }
 
-    /* ── 섹션 헤더 ── */
     .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 10px; }
     .section-title { font-size: 13px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.06em; }
     .section-btns { display: flex; gap: 8px; }
-
-    /* 편집/추가 버튼 */
     .edit-btn {
       padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
       border: 1px solid var(--border); background: #ffffff; color: var(--subtext);
@@ -95,50 +88,60 @@
 
     /* ── 종목 카드 ── */
     .stock-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+
     .stock-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.05); padding: 14px 16px;
       display: flex; align-items: center; gap: 12px;
       position: relative;
-      transition: transform 0.15s;
+      transition: box-shadow 0.2s, transform 0.2s;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
-    /* 편집 모드일 때 카드 왼쪽에 흔들림 */
-    .edit-mode .stock-card {
-      animation: wiggle 0.3s ease;
-    }
-    @keyframes wiggle {
-      0%,100% { transform: rotate(0deg); }
-      25%      { transform: rotate(-0.8deg); }
-      75%      { transform: rotate(0.8deg); }
+    /* 드래그 중인 카드 */
+    .stock-card.dragging {
+      opacity: 0.5;
+      border: 2px dashed var(--accent);
     }
 
-    /* X 삭제 버튼 (편집 모드에서만 보임) */
+    /* 드래그 대상 위치 표시 */
+    .stock-card.drag-over {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.3);
+    }
+
+    /* X 삭제 버튼 */
     .delete-btn {
       display: none;
-      position: absolute;
-      top: -8px; left: -8px;
+      position: absolute; top: -8px; left: -8px;
       width: 24px; height: 24px;
-      background: var(--red);
-      color: #fff;
-      border: 2px solid #fff;
-      border-radius: 50%;
+      background: var(--red); color: #fff;
+      border: 2px solid #fff; border-radius: 50%;
       font-size: 14px; font-weight: 700;
       align-items: center; justify-content: center;
-      cursor: pointer;
-      z-index: 5;
+      cursor: pointer; z-index: 5;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       -webkit-tap-highlight-color: transparent;
     }
     .edit-mode .delete-btn { display: flex; }
+
+    /* 드래그 핸들 (편집 모드에서만 보임) */
+    .drag-handle {
+      display: none;
+      color: var(--muted);
+      font-size: 18px;
+      cursor: grab;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .edit-mode .drag-handle { display: flex; align-items: center; }
 
     .stock-icon {
       width: 42px; height: 42px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: 800; flex-shrink: 0; letter-spacing: -0.5px;
     }
-    /* 기본 아이콘 색 (추가 종목은 회색 계열) */
     .icon-default { background: rgba(100,116,139,0.12); color: #475569; }
     .icon-nvda { background: rgba(118,185,0,0.12); color: #5a8a00; }
     .icon-avgo { background: rgba(204,50,50,0.10);  color: #c03030; }
@@ -163,40 +166,30 @@
 
     /* ── 종목 추가 팝업 ── */
     .modal-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4);
-      z-index: 100;
-      align-items: flex-end;
-      justify-content: center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 100;
+      align-items: flex-end; justify-content: center;
     }
     .modal-overlay.show { display: flex; }
     .modal {
-      background: #fff;
-      border-radius: 24px 24px 0 0;
-      padding: 24px 20px 40px;
-      width: 100%;
+      background: #fff; border-radius: 24px 24px 0 0;
+      padding: 24px 20px 40px; width: 100%;
       animation: slideUp 0.25s ease;
     }
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to   { transform: translateY(0); }
-    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
     .modal-sub { font-size: 13px; color: var(--subtext); margin-bottom: 20px; }
     .modal-input {
       width: 100%; padding: 14px 16px;
       border: 1.5px solid var(--border); border-radius: 14px;
       font-size: 18px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; outline: none;
-      margin-bottom: 12px;
+      text-transform: uppercase; outline: none; margin-bottom: 12px;
     }
     .modal-input:focus { border-color: var(--accent); }
     .modal-confirm {
       width: 100%; padding: 14px;
       background: var(--accent); border: none; border-radius: 14px;
-      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
-      margin-bottom: 10px;
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px;
     }
     .modal-cancel {
       width: 100%; padding: 14px;
@@ -205,14 +198,12 @@
     }
     .modal-error { font-size: 13px; color: var(--red); margin-bottom: 10px; display: none; }
 
-    /* ── 에러 박스 ── */
     .error-box {
       margin: 12px 20px; padding: 14px 16px;
       background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2);
       border-radius: 14px; font-size: 13px; color: #b91c1c; display: none;
     }
 
-    /* ── 하단 네비 ── */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: #ffffff; border-top: 1px solid var(--border);
@@ -244,7 +235,6 @@
     🔄 주가 갱신
   </button>
   <div class="last-update" id="last-update">아직 갱신 전 — 버튼을 눌러주세요</div>
-
   <div class="error-box" id="error-box"></div>
 
   <div class="summary-card" style="margin-top:12px;">
@@ -295,7 +285,6 @@
   </div>
 
   <script>
-    // ── 종목 목록 (localStorage에 저장해서 앱 껐다 켜도 유지) ──
     var DEFAULT_STOCKS = [
       { ticker: 'NVDA', name: 'Nvidia Corporation',      iconClass: 'icon-nvda' },
       { ticker: 'AVGO', name: 'Broadcom Inc.',           iconClass: 'icon-avgo' },
@@ -308,7 +297,11 @@
       { ticker: 'SPCX', name: 'Space ETF',               iconClass: 'icon-spcx' },
     ];
 
-    // localStorage에서 불러오기 (없으면 기본값 사용)
+    var ICON_MAP = {
+      'NVDA':'icon-nvda','AVGO':'icon-avgo','MU':'icon-mu','VRT':'icon-vrt',
+      'CIEN':'icon-cien','FIX':'icon-fix','LITE':'icon-lite','AAOI':'icon-aaoi','SPCX':'icon-spcx'
+    };
+
     function loadStocks() {
       try {
         var saved = localStorage.getItem('watchlist');
@@ -316,8 +309,6 @@
       } catch(e) {}
       return DEFAULT_STOCKS.slice();
     }
-
-    // localStorage에 저장
     function saveStocks() {
       try { localStorage.setItem('watchlist', JSON.stringify(STOCKS)); } catch(e) {}
     }
@@ -325,18 +316,12 @@
     var STOCKS = loadStocks();
     var isEditMode = false;
 
-    // 날짜 표시
+    // 날짜
     var d = new Date();
     document.getElementById('today-date').textContent =
       d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' });
 
-    // 종목별 아이콘 색 지정 (없으면 기본값)
-    var ICON_MAP = {
-      'NVDA':'icon-nvda','AVGO':'icon-avgo','MU':'icon-mu','VRT':'icon-vrt',
-      'CIEN':'icon-cien','FIX':'icon-fix','LITE':'icon-lite','AAOI':'icon-aaoi','SPCX':'icon-spcx'
-    };
-
-    // ── 카드 목록 그리기 ──
+    // ── 카드 그리기 ──
     function renderStockCards() {
       var list = document.getElementById('stock-list');
       list.innerHTML = '';
@@ -346,13 +331,17 @@
       document.getElementById('stat-total').textContent = STOCKS.length + '개';
 
       for (var i = 0; i < STOCKS.length; i++) {
-        (function(stock, idx) {
+        (function(stock) {
           var iconClass = ICON_MAP[stock.ticker] || 'icon-default';
           var card = document.createElement('div');
           card.className = 'stock-card';
           card.id = 'card-' + stock.ticker;
+          card.setAttribute('data-ticker', stock.ticker);
+          card.draggable = false; // 터치 드래그로만 처리
+
           card.innerHTML =
             '<div class="delete-btn" onclick="deleteStock(\'' + stock.ticker + '\')">×</div>' +
+            '<div class="drag-handle" id="handle-' + stock.ticker + '">⠿</div>' +
             '<div class="stock-icon ' + iconClass + '">' + stock.ticker + '</div>' +
             '<div class="stock-info">' +
               '<div class="stock-ticker">' + stock.ticker + '</div>' +
@@ -362,12 +351,98 @@
               '<div class="stock-price loading" id="price-' + stock.ticker + '">—</div>' +
               '<div class="stock-change flat" id="change-' + stock.ticker + '">갱신 전</div>' +
             '</div>';
+
           list.appendChild(card);
-        })(STOCKS[i], i);
+
+          // 터치 드래그 이벤트 (핸들에만 적용)
+          var handle = card.querySelector('.drag-handle');
+          handle.addEventListener('touchstart', onTouchStart, { passive: false });
+        })(STOCKS[i]);
       }
     }
 
-    // ── 편집 모드 토글 ──
+    // ── 터치 드래그 로직 ──
+    var dragSrc = null;      // 드래그 중인 카드 요소
+    var dragTicker = null;   // 드래그 중인 종목 ticker
+    var startY = 0;
+    var origIndex = 0;
+
+    function onTouchStart(e) {
+      if (!isEditMode) return;
+      e.preventDefault();
+
+      var card = e.target.closest('.stock-card');
+      if (!card) return;
+
+      dragTicker = card.getAttribute('data-ticker');
+      dragSrc = card;
+      startY = e.touches[0].clientY;
+      origIndex = getCardIndex(card);
+
+      card.classList.add('dragging');
+
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onTouchEnd);
+    }
+
+    function onTouchMove(e) {
+      e.preventDefault();
+      var y = e.touches[0].clientY;
+      var cards = document.querySelectorAll('.stock-card:not(.dragging)');
+
+      // 현재 터치 위치에 있는 카드 찾기
+      var target = null;
+      for (var i = 0; i < cards.length; i++) {
+        var rect = cards[i].getBoundingClientRect();
+        var mid = rect.top + rect.height / 2;
+        if (y < mid) { target = cards[i]; break; }
+      }
+
+      // drag-over 표시 초기화
+      document.querySelectorAll('.stock-card').forEach(function(c) {
+        c.classList.remove('drag-over');
+      });
+      if (target) target.classList.add('drag-over');
+    }
+
+    function onTouchEnd(e) {
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+
+      if (!dragSrc) return;
+      dragSrc.classList.remove('dragging');
+
+      // drag-over 된 카드 찾기
+      var overCard = document.querySelector('.stock-card.drag-over');
+      if (overCard) overCard.classList.remove('drag-over');
+
+      if (overCard && overCard !== dragSrc) {
+        var fromIdx = STOCKS.findIndex(function(s) { return s.ticker === dragTicker; });
+        var toTicker = overCard.getAttribute('data-ticker');
+        var toIdx = STOCKS.findIndex(function(s) { return s.ticker === toTicker; });
+
+        if (fromIdx !== -1 && toIdx !== -1) {
+          // 배열에서 순서 바꾸기
+          var item = STOCKS.splice(fromIdx, 1)[0];
+          STOCKS.splice(toIdx, 0, item);
+          saveStocks();
+          renderStockCards();
+        }
+      }
+
+      dragSrc = null;
+      dragTicker = null;
+    }
+
+    function getCardIndex(card) {
+      var cards = document.querySelectorAll('.stock-card');
+      for (var i = 0; i < cards.length; i++) {
+        if (cards[i] === card) return i;
+      }
+      return 0;
+    }
+
+    // ── 편집 모드 ──
     function toggleEditMode() {
       isEditMode = !isEditMode;
       var btn = document.getElementById('edit-btn');
@@ -381,17 +456,15 @@
       renderStockCards();
     }
 
-    // ── 종목 삭제 ──
+    // ── 삭제 ──
     function deleteStock(ticker) {
       STOCKS = STOCKS.filter(function(s) { return s.ticker !== ticker; });
       saveStocks();
       renderStockCards();
-      document.getElementById('stat-total').textContent = STOCKS.length + '개';
     }
 
-    // ── 팝업 열기/닫기 ──
+    // ── 팝업 ──
     function openModal() {
-      // 편집 모드면 먼저 끄기
       if (isEditMode) toggleEditMode();
       document.getElementById('ticker-input').value = '';
       document.getElementById('modal-error').style.display = 'none';
@@ -405,7 +478,6 @@
       if (e.target === document.getElementById('modal-overlay')) closeModal();
     }
 
-    // ── 종목 추가 확인 ──
     async function confirmAdd() {
       var ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
       var errEl = document.getElementById('modal-error');
@@ -416,8 +488,6 @@
         errEl.style.display = 'block';
         return;
       }
-
-      // 중복 체크
       for (var i = 0; i < STOCKS.length; i++) {
         if (STOCKS[i].ticker === ticker) {
           errEl.textContent = '이미 워치리스트에 있어요!';
@@ -426,7 +496,6 @@
         }
       }
 
-      // 실제로 존재하는 종목인지 확인 (Yahoo Finance로 검증)
       errEl.textContent = '확인 중...';
       errEl.style.display = 'block';
       errEl.style.color = 'var(--subtext)';
@@ -439,14 +508,12 @@
         return;
       }
 
-      // 추가!
       STOCKS.push({ ticker: ticker, name: name, iconClass: ICON_MAP[ticker] || 'icon-default' });
       saveStocks();
       closeModal();
       renderStockCards();
     }
 
-    // 종목 이름 가져오기 (Yahoo Finance)
     async function fetchStockName(ticker) {
       var urls = [
         'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d',
@@ -465,7 +532,6 @@
       return null;
     }
 
-    // ── 주가 불러오기 ──
     async function fetchPrice(ticker) {
       var urls = [
         'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d',
@@ -499,7 +565,6 @@
 
       for (var i = 0; i < STOCKS.length; i++) {
         var s = STOCKS[i];
-        // 카드가 없으면 (삭제된 경우) 스킵
         if (!document.getElementById('price-' + s.ticker)) continue;
         var result = await fetchPrice(s.ticker);
         var priceEl  = document.getElementById('price-'  + s.ticker);
@@ -526,7 +591,7 @@
         }
       }
 
-      document.getElementById('stat-up').textContent   = upCount   + '개';
+      document.getElementById('stat-up').textContent   = upCount + '개';
       document.getElementById('stat-down').textContent = downCount + '개';
       document.getElementById('total-change-val').textContent = upCount + '↑  ' + downCount + '↓';
       var pctEl = document.getElementById('total-change-pct');
@@ -546,7 +611,6 @@
       }
     }
 
-    // 초기 렌더
     renderStockCards();
   </script>
 
