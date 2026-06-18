@@ -937,6 +937,146 @@
 
     renderStockCards();
 
+    // ════ 지수 불러오기 ════
+    var INDICES = [
+      { id: 'SPY',   ticker: '^GSPC',  label: 'S&P 500'    },
+      { id: 'QQQ',   ticker: '^IXIC',  label: '나스닥'      },
+      { id: 'DJI',   ticker: '^DJI',   label: '다우존스'    },
+      { id: 'KOSPI', ticker: '^KS11',  label: '코스피'      },
+      { id: 'N225',  ticker: '^N225',  label: '니케이 225'  },
+    ];
+
+    async function fetchIndex(ticker) {
+      var urls = [
+        'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(ticker) + '?interval=1d&range=1d',
+        'https://query2.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(ticker) + '?interval=1d&range=1d',
+        'https://corsproxy.io/?' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d')
+      ];
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          var res = await fetch(urls[i], { signal: AbortSignal.timeout(8000) });
+          if (!res.ok) continue;
+          var data = await res.json();
+          var meta = data.chart.result[0].meta;
+          var price = meta.regularMarketPrice;
+          var prev  = meta.chartPreviousClose;
+          var chg   = price - prev;
+          var pct   = (chg / prev) * 100;
+          return { price: price, change: chg, pct: pct, ok: true };
+        } catch(e) {}
+      }
+      return { ok: false };
+    }
+
+    async function fetchAllIndices() {
+      var btn = document.getElementById('index-refresh-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinning">🔄</span> 불러오는 중...';
+
+      for (var i = 0; i < INDICES.length; i++) {
+        var idx = INDICES[i];
+        var result = await fetchIndex(idx.ticker);
+        var priceEl  = document.getElementById('idx-price-'  + idx.id);
+        var changeEl = document.getElementById('idx-change-' + idx.id);
+        if (!priceEl) continue;
+
+        if (result.ok) {
+          // 지수는 소수점 없이 또는 2자리
+          var priceStr = result.price >= 1000
+            ? result.price.toLocaleString('en-US', { maximumFractionDigits: 2 })
+            : result.price.toFixed(2);
+          priceEl.textContent = priceStr;
+          if (result.change >= 0) {
+            changeEl.textContent = '▲ +' + result.pct.toFixed(2) + '%';
+            changeEl.className = 'idx-change up';
+          } else {
+            changeEl.textContent = '▼ ' + result.pct.toFixed(2) + '%';
+            changeEl.className = 'idx-change down';
+          }
+        } else {
+          priceEl.textContent = '오류';
+          changeEl.textContent = '재시도';
+          changeEl.className = 'idx-change flat';
+        }
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '🔄 지수 갱신';
+      var now = new Date();
+      document.getElementById('index-last-update').textContent =
+        '마지막 갱신: ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ════ 글로벌 뉴스 불러오기 ════
+    // CORS 프록시를 통해 Yahoo Finance RSS 불러오기
+    var NEWS_FEEDS = [
+      { name: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex' },
+      { name: 'Reuters',       url: 'https://feeds.reuters.com/reuters/businessNews' },
+      { name: 'Bloomberg',     url: 'https://feeds.bloomberg.com/markets/news.rss' },
+    ];
+
+    function timeAgo(dateStr) {
+      var now = new Date();
+      var then = new Date(dateStr);
+      var diff = Math.floor((now - then) / 60000); // 분
+      if (diff < 1)  return '방금 전';
+      if (diff < 60) return diff + '분 전';
+      var h = Math.floor(diff / 60);
+      if (h < 24)    return h + '시간 전';
+      return Math.floor(h / 24) + '일 전';
+    }
+
+    async function loadGlobalNews() {
+      var container = document.getElementById('global-news-list');
+      container.innerHTML = '<div style="font-size:13px;color:#9ca3af;text-align:center;padding:16px;">뉴스 불러오는 중...</div>';
+
+      var allItems = [];
+
+      for (var f = 0; f < NEWS_FEEDS.length; f++) {
+        var feed = NEWS_FEEDS[f];
+        try {
+          var proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(feed.url);
+          var res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+          if (!res.ok) continue;
+          var text = await res.text();
+          var parser = new DOMParser();
+          var xml = parser.parseFromString(text, 'text/xml');
+          var items = xml.querySelectorAll('item');
+          items.forEach(function(item, i) {
+            if (i >= 5) return; // 피드당 최대 5개
+            var title   = item.querySelector('title')   ? item.querySelector('title').textContent   : '';
+            var link    = item.querySelector('link')    ? item.querySelector('link').textContent    : '#';
+            var pubDate = item.querySelector('pubDate') ? item.querySelector('pubDate').textContent : '';
+            if (title) allItems.push({ title: title, link: link, pubDate: pubDate, source: feed.name });
+          });
+        } catch(e) {}
+      }
+
+      if (allItems.length === 0) {
+        container.innerHTML = '<div style="font-size:13px;color:#9ca3af;text-align:center;padding:16px;">뉴스를 불러오지 못했어요</div>';
+        return;
+      }
+
+      // 날짜순 정렬
+      allItems.sort(function(a, b) { return new Date(b.pubDate) - new Date(a.pubDate); });
+
+      container.innerHTML = '';
+      allItems.slice(0, 20).forEach(function(item) {
+        var div = document.createElement('div');
+        div.className = 'news-item';
+        div.innerHTML =
+          '<div class="news-source">' +
+            '<span class="news-source-badge">' + item.source + '</span>' +
+            '<span class="news-time">' + (item.pubDate ? timeAgo(item.pubDate) : '') + '</span>' +
+          '</div>' +
+          '<div class="news-headline">' + item.title + '</div>';
+        div.addEventListener('touchend', function() {
+          window.open(item.link, '_blank');
+        });
+        container.appendChild(div);
+      });
+    }
+
     // ════ 탭 전환 ════
     var currentTab = 'watchlist';
 
@@ -1033,6 +1173,8 @@
         document.getElementById('pat-setup-card').style.display = 'none';
         loadRecentRuns();
       }
+      // 글로벌 뉴스 로드
+      loadGlobalNews();
     }
 
     // 워크플로우 실행
