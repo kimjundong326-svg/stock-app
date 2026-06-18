@@ -280,7 +280,6 @@
 
     <div class="tabs">
       <button class="tab active">워치리스트</button>
-      <button class="tab">뉴스</button>
       <button class="tab">메모</button>
     </div>
 
@@ -487,7 +486,7 @@
 
   <div class="bottom-nav">
     <div class="nav-item active"><div class="nav-icon">📈</div><div class="nav-label" style="color:#2563eb;">홈</div></div>
-    <div class="nav-item"><div class="nav-icon">📰</div><div class="nav-label">뉴스</div></div>
+    <div class="nav-item" id="nav-news"><div class="nav-icon">📰</div><div class="nav-label">뉴스</div></div>
     <div class="nav-item" id="nav-index"><div class="nav-icon">🌐</div><div class="nav-label">지수</div></div>
     <div class="nav-item"><div class="nav-icon">📝</div><div class="nav-label">메모</div></div>
     <div class="nav-item"><div class="nav-icon">⚙️</div><div class="nav-label">설정</div></div>
@@ -1110,19 +1109,50 @@
       fetchAllIndices();
     }
 
+    // 상단 탭 (워치리스트 / 메모)
     document.querySelectorAll('.tab').forEach(function(tab, idx) {
       tab.addEventListener('touchend', function() {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         tab.classList.add('active');
+        updateNavActive('');
         if (idx === 0) { currentTab = 'watchlist'; showWatchlist(); }
-        else if (idx === 1) { currentTab = 'news'; showNews(); }
-        else if (idx === 2) { currentTab = 'memo'; }
+        else if (idx === 1) { currentTab = 'memo'; }
       });
     });
 
-    // 하단 네비 지수 탭
+    // 하단 네비 탭 연결
+    function updateNavActive(id) {
+      ['nav-news','nav-index'].forEach(function(nid) {
+        var el = document.getElementById(nid);
+        if (el) el.querySelector('.nav-label').style.color = nid === id ? '#2563eb' : '#9ca3af';
+      });
+      // 홈 아이콘
+      var homeNav = document.querySelector('.nav-item.active .nav-label');
+    }
+
+    // 하단 홈 탭
+    document.querySelector('.nav-item').addEventListener('touchend', function() {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab')[0].classList.add('active');
+      updateNavActive('');
+      currentTab = 'watchlist';
+      showWatchlist();
+    });
+
+    // 하단 뉴스 탭
+    document.getElementById('nav-news').addEventListener('touchend', function() {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      updateNavActive('nav-news');
+      document.getElementById('nav-news').querySelector('.nav-label').style.color = '#2563eb';
+      currentTab = 'news';
+      showNews();
+    });
+
+    // 하단 지수 탭
     document.getElementById('nav-index').addEventListener('touchend', function() {
       document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      updateNavActive('nav-index');
+      document.getElementById('nav-index').querySelector('.nav-label').style.color = '#2563eb';
       currentTab = 'index';
       showIndex();
     });
