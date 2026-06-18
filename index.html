@@ -129,11 +129,12 @@
     /* 드래그 핸들 (편집 모드에서만 보임) */
     .drag-handle {
       display: none;
-      color: var(--muted);
-      font-size: 18px;
+      color: #c0c8d8;
+      font-size: 22px;
       cursor: grab;
-      padding: 0 4px;
+      padding: 0 0 0 8px;
       flex-shrink: 0;
+      line-height: 1;
     }
     .edit-mode .drag-handle { display: flex; align-items: center; }
 
@@ -341,7 +342,7 @@
 
           card.innerHTML =
             '<div class="delete-btn" onclick="deleteStock(\'' + stock.ticker + '\')">×</div>' +
-            '<div class="drag-handle" id="handle-' + stock.ticker + '">⠿</div>' +
+            
             '<div class="stock-icon ' + iconClass + '">' + stock.ticker + '</div>' +
             '<div class="stock-info">' +
               '<div class="stock-ticker">' + stock.ticker + '</div>' +
@@ -350,7 +351,8 @@
             '<div class="stock-price-wrap">' +
               '<div class="stock-price loading" id="price-' + stock.ticker + '">—</div>' +
               '<div class="stock-change flat" id="change-' + stock.ticker + '">갱신 전</div>' +
-            '</div>';
+            '</div>' +
+            '<div class="drag-handle" id="handle-' + stock.ticker + '">⠿</div>';
 
           list.appendChild(card);
 
