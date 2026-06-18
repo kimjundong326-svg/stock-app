@@ -526,7 +526,6 @@
       document.getElementById('chart-loading').style.display = 'flex';
       document.getElementById('chart-svg').innerHTML = '';
 
-      // interval 결정
       var intervalMap = { '1d': '5m', '5d': '30m', '1mo': '1d', '3mo': '1d' };
       var interval = intervalMap[period] || '1d';
 
@@ -558,13 +557,12 @@
       var meta   = result.meta;
       var quotes = result.indicators.quote[0];
       var closes = quotes.close;
-      var timestamps = result.timestamp;
 
-      // 상세 지표 업데이트
-      var price    = meta.regularMarketPrice;
-      var prev     = meta.chartPreviousClose;
-      var chg      = price - prev;
-      var pct      = (chg / prev) * 100;
+      // ── 가격 / 변동 ──
+      var price = meta.regularMarketPrice;
+      var prev  = meta.chartPreviousClose;
+      var chg   = price - prev;
+      var pct   = (chg / prev) * 100;
 
       document.getElementById('d-price').textContent = '$' + price.toFixed(2);
       var dChange = document.getElementById('d-change');
@@ -576,54 +574,39 @@
         dChange.className = 'detail-change down';
       }
 
-      document.getElementById('d-open').textContent  = '$' + (meta.regularMarketOpen || meta.open || '—').toFixed ? '$' + (meta.regularMarketOpen || 0).toFixed(2) : '—';
-      document.getElementById('d-prev').textContent  = '$' + prev.toFixed(2);
+      // ── 시가 ──
+      var openPrice = meta.regularMarketOpen || 0;
+      document.getElementById('d-open').textContent = openPrice > 0 ? '$' + openPrice.toFixed(2) : '—';
+
+      // ── 전일 종가 ──
+      document.getElementById('d-prev').textContent = '$' + prev.toFixed(2);
+
+      // ── 52주 최고/최저 ──
       document.getElementById('d-high52').textContent = meta.fiftyTwoWeekHigh ? '$' + meta.fiftyTwoWeekHigh.toFixed(2) : '—';
       document.getElementById('d-low52').textContent  = meta.fiftyTwoWeekLow  ? '$' + meta.fiftyTwoWeekLow.toFixed(2)  : '—';
 
+      // ── 거래량 ──
       var vol = meta.regularMarketVolume;
       document.getElementById('d-vol').textContent = vol
         ? (vol >= 1e9 ? (vol/1e9).toFixed(1)+'B' : vol >= 1e6 ? (vol/1e6).toFixed(1)+'M' : (vol/1e3).toFixed(0)+'K')
         : '—';
 
-      // 시가총액 — Yahoo Finance v8에서 여러 필드 시도
-      var mktcap = meta.marketCap || meta.regularMarketDayHigh || null;
-
-      // v10 Quote Summary API로 시가총액 추가 시도
-      try {
-        var qUrl = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/' + ticker + '?modules=summaryDetail,defaultKeyStatistics';
-        var qRes = await fetch(qUrl, { signal: AbortSignal.timeout(6000) });
-        if (qRes.ok) {
-          var qData = await qRes.json();
-          var sd = qData.quoteSummary.result[0].summaryDetail;
-          var ks = qData.quoteSummary.result[0].defaultKeyStatistics;
-          if (sd && sd.marketCap && sd.marketCap.raw) mktcap = sd.marketCap.raw;
-
-          // 시가총액 순위
-          var rank = ks && ks.enterpriseValue && ks.enterpriseValue.raw ? null : null;
-          // S&P500 순위는 직접 제공 안 되므로 시가총액 기준 대략 표시
-          if (mktcap) {
-            var rankText = '';
-            if (mktcap >= 3e12) rankText = 'Top 3 (메가캡)';
-            else if (mktcap >= 1e12) rankText = 'Top 10 ~ 30 (대형주)';
-            else if (mktcap >= 5e11) rankText = 'Top 30 ~ 60 (대형주)';
-            else if (mktcap >= 1e11) rankText = 'Top 60 ~ 200 (중대형주)';
-            else if (mktcap >= 1e10) rankText = 'Top 200 ~ 400 (중형주)';
-            else rankText = 'S&P 500 하위권 또는 미포함';
-            document.getElementById('d-rank').textContent = rankText;
-          } else {
-            document.getElementById('d-rank').textContent = 'ETF / 데이터 없음';
-          }
-        }
-      } catch(e) {
-        document.getElementById('d-rank').textContent = '조회 불가';
+      // ── 시가총액 ──
+      // Yahoo Finance v8에서 sharesOutstanding × 현재가로 계산
+      var mktcap = meta.marketCap || null;
+      if (!mktcap && meta.sharesOutstanding) {
+        mktcap = price * meta.sharesOutstanding;
       }
-
-      document.getElementById('d-mktcap').textContent = mktcap
-        ? (mktcap >= 1e12 ? '$'+(mktcap/1e12).toFixed(2)+'T' : mktcap >= 1e9 ? '$'+(mktcap/1e9).toFixed(1)+'B' : '$'+(mktcap/1e6).toFixed(0)+'M')
+      document.getElementById('d-mktcap').textContent = mktcap && mktcap > 0
+        ? (mktcap >= 1e12 ? '$'+(mktcap/1e12).toFixed(2)+'T'
+          : mktcap >= 1e9  ? '$'+(mktcap/1e9).toFixed(1)+'B'
+          : '$'+(mktcap/1e6).toFixed(0)+'M')
         : '—';
 
-      // ── SVG 차트 그리기 ──
+      // ── S&P 500 순위 ──
+      document.getElementById('d-rank').textContent = getSpRank(ticker, mktcap);
+
+      // ── SVG 차트 ──
       var validCloses = closes.filter(function(v) { return v !== null && v !== undefined; });
       if (validCloses.length < 2) return;
 
@@ -632,7 +615,6 @@
       var maxV = Math.max.apply(null, validCloses);
       var range = maxV - minV || 1;
 
-      // 포인트 계산
       var pts = [];
       var validIdx = 0;
       for (var j = 0; j < closes.length; j++) {
@@ -643,14 +625,11 @@
         validIdx++;
       }
 
-      // 선 색깔 (상승=초록, 하락=빨강)
       var lineColor = chg >= 0 ? '#16a34a' : '#dc2626';
       var fillColor = chg >= 0 ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)';
 
-      // path 문자열
       var linePath = 'M ' + pts[0].x + ' ' + pts[0].y;
       for (var k = 1; k < pts.length; k++) linePath += ' L ' + pts[k].x + ' ' + pts[k].y;
-
       var fillPath = linePath + ' L ' + pts[pts.length-1].x + ' ' + (H-PAD) + ' L ' + pts[0].x + ' ' + (H-PAD) + ' Z';
 
       var svg = document.getElementById('chart-svg');
@@ -659,7 +638,7 @@
         '<path d="' + linePath + '" fill="none" stroke="' + lineColor + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
     }
 
-    // ════ 편집/삭제/드래그 ════
+        // ════ 편집/삭제/드래그 ════
     function toggleEditMode() {
       isEditMode = !isEditMode;
       var btn = document.getElementById('edit-btn');
