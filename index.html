@@ -369,6 +369,34 @@
   </div>
 
   <script>
+
+    // S&P 500 시가총액 순위 (2025년 기준 상위 50위)
+    var SP500_RANK = {
+      'AAPL':1,'MSFT':2,'NVDA':3,'AMZN':4,'GOOGL':5,'META':6,'TSLA':7,'BRK.B':8,
+      'AVGO':9,'LLY':10,'JPM':11,'V':12,'XOM':13,'UNH':14,'MA':15,'COST':16,
+      'HD':17,'PG':18,'WMT':19,'NFLX':20,'JNJ':21,'CRM':22,'BAC':23,'ABBV':24,
+      'ORCL':25,'CVX':26,'MRK':27,'AMD':28,'KO':29,'PEP':30,'TMO':31,'ACN':32,
+      'ADBE':33,'MCD':34,'CSCO':35,'LIN':36,'WFC':37,'IBM':38,'GE':39,'DHR':40,
+      'INTU':41,'TXN':42,'PM':43,'AMGN':44,'ISRG':45,'NOW':46,'GS':47,'SPGI':48,
+      'RTX':49,'BKNG':50,'MU':51,'VRT':120,'CIEN':350,'FIX':280,'LITE':400,
+      'AAOI':500,'INTC':60,'SPCX':null
+    };
+
+    function getSpRank(ticker, mktcap) {
+      if (SP500_RANK[ticker] !== undefined) {
+        if (SP500_RANK[ticker] === null) return 'S&P 500 미포함 (ETF)';
+        return 'S&P 500 약 ' + SP500_RANK[ticker] + '위';
+      }
+      // 순위 데이터 없으면 시가총액으로 추정
+      if (!mktcap) return '데이터 없음';
+      if (mktcap >= 2e12) return 'S&P 500 Top 10';
+      if (mktcap >= 5e11) return 'S&P 500 Top 30';
+      if (mktcap >= 1e11) return 'S&P 500 Top 100';
+      if (mktcap >= 5e10) return 'S&P 500 Top 200';
+      if (mktcap >= 1e10) return 'S&P 500 Top 400';
+      return 'S&P 500 하위권';
+    }
+
     var DEFAULT_STOCKS = [
       { ticker: 'NVDA', name: 'Nvidia Corporation',      iconClass: 'icon-nvda' },
       { ticker: 'AVGO', name: 'Broadcom Inc.',           iconClass: 'icon-avgo' },
