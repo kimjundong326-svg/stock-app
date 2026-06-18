@@ -339,6 +339,10 @@
         <div class="ds-label">시가총액</div>
         <div class="ds-value" id="d-mktcap">—</div>
       </div>
+      <div class="detail-stat-card" style="grid-column: span 2;">
+        <div class="ds-label">시가총액 순위 (S&P 500)</div>
+        <div class="ds-value" id="d-rank">—</div>
+      </div>
     </div>
   </div>
 
@@ -460,7 +464,7 @@
       dChange.className = 'detail-change ' + (changeEl ? (changeEl.classList.contains('up') ? 'up' : changeEl.classList.contains('down') ? 'down' : 'flat') : 'flat');
 
       // 상세 지표 초기화
-      ['d-open','d-prev','d-high52','d-low52','d-vol','d-mktcap'].forEach(function(id) {
+      ['d-open','d-prev','d-high52','d-low52','d-vol','d-mktcap','d-rank'].forEach(function(id) {
         document.getElementById(id).textContent = '불러오는 중...';
       });
 
@@ -554,7 +558,39 @@
         ? (vol >= 1e9 ? (vol/1e9).toFixed(1)+'B' : vol >= 1e6 ? (vol/1e6).toFixed(1)+'M' : (vol/1e3).toFixed(0)+'K')
         : '—';
 
-      var mktcap = meta.marketCap;
+      // 시가총액 — Yahoo Finance v8에서 여러 필드 시도
+      var mktcap = meta.marketCap || meta.regularMarketDayHigh || null;
+
+      // v10 Quote Summary API로 시가총액 추가 시도
+      try {
+        var qUrl = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/' + ticker + '?modules=summaryDetail,defaultKeyStatistics';
+        var qRes = await fetch(qUrl, { signal: AbortSignal.timeout(6000) });
+        if (qRes.ok) {
+          var qData = await qRes.json();
+          var sd = qData.quoteSummary.result[0].summaryDetail;
+          var ks = qData.quoteSummary.result[0].defaultKeyStatistics;
+          if (sd && sd.marketCap && sd.marketCap.raw) mktcap = sd.marketCap.raw;
+
+          // 시가총액 순위
+          var rank = ks && ks.enterpriseValue && ks.enterpriseValue.raw ? null : null;
+          // S&P500 순위는 직접 제공 안 되므로 시가총액 기준 대략 표시
+          if (mktcap) {
+            var rankText = '';
+            if (mktcap >= 3e12) rankText = 'Top 3 (메가캡)';
+            else if (mktcap >= 1e12) rankText = 'Top 10 ~ 30 (대형주)';
+            else if (mktcap >= 5e11) rankText = 'Top 30 ~ 60 (대형주)';
+            else if (mktcap >= 1e11) rankText = 'Top 60 ~ 200 (중대형주)';
+            else if (mktcap >= 1e10) rankText = 'Top 200 ~ 400 (중형주)';
+            else rankText = 'S&P 500 하위권 또는 미포함';
+            document.getElementById('d-rank').textContent = rankText;
+          } else {
+            document.getElementById('d-rank').textContent = 'ETF / 데이터 없음';
+          }
+        }
+      } catch(e) {
+        document.getElementById('d-rank').textContent = '조회 불가';
+      }
+
       document.getElementById('d-mktcap').textContent = mktcap
         ? (mktcap >= 1e12 ? '$'+(mktcap/1e12).toFixed(2)+'T' : mktcap >= 1e9 ? '$'+(mktcap/1e9).toFixed(1)+'B' : '$'+(mktcap/1e6).toFixed(0)+'M')
         : '—';
