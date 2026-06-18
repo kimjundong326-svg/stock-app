@@ -216,6 +216,33 @@
     .ds-value.up   { color: var(--green); }
     .ds-value.down { color: var(--red); }
 
+    /* ── 지수 카드 ── */
+    .idx-card {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05); padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .idx-left {}
+    .idx-name { font-size: 15px; font-weight: 700; color: #111827; }
+    .idx-ticker { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .idx-right { text-align: right; }
+    .idx-price { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .idx-change { font-size: 12px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .idx-change.up   { color: #16a34a; }
+    .idx-change.down { color: #dc2626; }
+    .idx-change.flat { color: #9ca3af; }
+
+    /* ── 뉴스 카드 ── */
+    .news-item {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 14px;
+      padding: 14px 16px; margin-bottom: 8px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .news-source { font-size: 11px; color: #9ca3af; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .news-source-badge { background: #e5e7eb; border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 600; color: #6b7280; }
+    .news-headline { font-size: 14px; font-weight: 600; color: #111827; line-height: 1.4; margin-bottom: 4px; }
+    .news-time { font-size: 11px; color: #9ca3af; }
+
     /* ── 추가 팝업 ── */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: flex-end; justify-content: center; }
     .modal-overlay.show { display: flex; }
@@ -349,6 +376,14 @@
   <!-- ════ 뉴스 섹션 (탭 전환용) ════ -->
   <div id="news-section" style="display:none; padding: 0 20px;">
 
+    <!-- 뉴스 피드 -->
+    <div style="margin: 16px 0 8px; font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em;">📰 글로벌 뉴스</div>
+    <div id="global-news-list">
+      <div style="font-size:13px; color:#9ca3af; text-align:center; padding:20px;">뉴스 탭 클릭 시 자동 로드</div>
+    </div>
+
+    <div style="margin: 16px 0 8px; font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em;">⚡ GitHub Actions 실행</div>
+
     <!-- GitHub PAT 설정 카드 -->
     <div id="pat-setup-card" style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:20px; padding:20px; margin:16px 0; display:none;">
       <div style="font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">GitHub 토큰 설정</div>
@@ -394,6 +429,48 @@
     </button>
   </div>
 
+  <!-- ════ 지수 섹션 ════ -->
+  <div id="index-section" style="display:none; padding:0 20px 20px;">
+
+    <button id="index-refresh-btn" onclick="fetchAllIndices()"
+      style="width:100%; padding:13px; background:#2563eb; border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin:16px 0 8px; -webkit-tap-highlight-color:transparent;">
+      🔄 지수 갱신
+    </button>
+    <div id="index-last-update" style="text-align:center; font-size:11px; color:#9ca3af; margin-bottom:16px;">아직 갱신 전</div>
+
+    <!-- 미국 지수 -->
+    <div style="font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">🇺🇸 미국</div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+      <div class="idx-card" id="idx-SPY">
+        <div class="idx-left"><div class="idx-name">S&amp;P 500</div><div class="idx-ticker">^GSPC</div></div>
+        <div class="idx-right"><div class="idx-price" id="idx-price-SPY">—</div><div class="idx-change flat" id="idx-change-SPY">갱신 전</div></div>
+      </div>
+      <div class="idx-card" id="idx-QQQ">
+        <div class="idx-left"><div class="idx-name">나스닥 100</div><div class="idx-ticker">^IXIC</div></div>
+        <div class="idx-right"><div class="idx-price" id="idx-price-QQQ">—</div><div class="idx-change flat" id="idx-change-QQQ">갱신 전</div></div>
+      </div>
+      <div class="idx-card" id="idx-DJI">
+        <div class="idx-left"><div class="idx-name">다우존스</div><div class="idx-ticker">^DJI</div></div>
+        <div class="idx-right"><div class="idx-price" id="idx-price-DJI">—</div><div class="idx-change flat" id="idx-change-DJI">갱신 전</div></div>
+      </div>
+    </div>
+
+    <!-- 아시아 지수 -->
+    <div style="font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">🌏 아시아</div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+      <div class="idx-card" id="idx-KOSPI">
+        <div class="idx-left"><div class="idx-name">코스피</div><div class="idx-ticker">^KS11</div></div>
+        <div class="idx-right"><div class="idx-price" id="idx-price-KOSPI">—</div><div class="idx-change flat" id="idx-change-KOSPI">갱신 전</div></div>
+      </div>
+      <div class="idx-card" id="idx-N225">
+        <div class="idx-left"><div class="idx-name">니케이 225</div><div class="idx-ticker">^N225</div></div>
+        <div class="idx-right"><div class="idx-price" id="idx-price-N225">—</div><div class="idx-change flat" id="idx-change-N225">갱신 전</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 뉴스 섹션 전체 교체 ════ -->
+
   <!-- 추가 팝업 -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
     <div class="modal">
@@ -411,7 +488,7 @@
   <div class="bottom-nav">
     <div class="nav-item active"><div class="nav-icon">📈</div><div class="nav-label" style="color:#2563eb;">홈</div></div>
     <div class="nav-item"><div class="nav-icon">📰</div><div class="nav-label">뉴스</div></div>
-    <div class="nav-item"><div class="nav-icon">🔔</div><div class="nav-label">알림</div></div>
+    <div class="nav-item" id="nav-index"><div class="nav-icon">🌐</div><div class="nav-label">지수</div></div>
     <div class="nav-item"><div class="nav-icon">📝</div><div class="nav-label">메모</div></div>
     <div class="nav-item"><div class="nav-icon">⚙️</div><div class="nav-label">설정</div></div>
   </div>
@@ -540,9 +617,11 @@
       dChange.className = 'detail-change ' + (changeEl ? (changeEl.classList.contains('up') ? 'up' : changeEl.classList.contains('down') ? 'down' : 'flat') : 'flat');
 
       // 상세 지표 초기화
-      ['d-open','d-prev','d-high52','d-low52','d-vol','d-mktcap','d-rank'].forEach(function(id) {
-        document.getElementById(id).textContent = '불러오는 중...';
+      ['d-open','d-prev','d-high52','d-low52','d-vol'].forEach(function(id) {
+        document.getElementById(id).textContent = '—';
       });
+      document.getElementById('d-mktcap').textContent = formatMktcap(getStockMktcap(ticker));
+      document.getElementById('d-rank').textContent = getSpRank(ticker);
 
       // 차트 탭 초기화
       document.querySelectorAll('.chart-tab').forEach(function(t) { t.classList.remove('active'); });
@@ -661,7 +740,11 @@
 
       // ── SVG 차트 ──
       var validCloses = closes.filter(function(v) { return v !== null && v !== undefined; });
-      if (validCloses.length < 2) return;
+      if (validCloses.length < 2) {
+        document.getElementById('chart-loading').style.display = 'flex';
+        document.getElementById('chart-loading').textContent = '📊 장 마감 후에는 차트가 표시되지 않아요';
+        return;
+      }
 
       var W = 400, H = 180, PAD = 10;
       var minV = Math.min.apply(null, validCloses);
@@ -856,31 +939,52 @@
 
     // ════ 탭 전환 ════
     var currentTab = 'watchlist';
+
+    function showWatchlist() {
+      document.getElementById('refresh-btn').style.display = 'flex';
+      document.querySelector('.last-update').style.display = 'block';
+      document.querySelector('.summary-card').style.display = 'block';
+      document.querySelector('.section-header').style.display = 'flex';
+      document.getElementById('stock-list').style.display = 'flex';
+      document.getElementById('news-section').style.display = 'none';
+      document.getElementById('index-section').style.display = 'none';
+    }
+    function showNews() {
+      document.getElementById('refresh-btn').style.display = 'none';
+      document.querySelector('.last-update').style.display = 'none';
+      document.querySelector('.summary-card').style.display = 'none';
+      document.querySelector('.section-header').style.display = 'none';
+      document.getElementById('stock-list').style.display = 'none';
+      document.getElementById('news-section').style.display = 'block';
+      document.getElementById('index-section').style.display = 'none';
+      initNewsTab();
+    }
+    function showIndex() {
+      document.getElementById('refresh-btn').style.display = 'none';
+      document.querySelector('.last-update').style.display = 'none';
+      document.querySelector('.summary-card').style.display = 'none';
+      document.querySelector('.section-header').style.display = 'none';
+      document.getElementById('stock-list').style.display = 'none';
+      document.getElementById('news-section').style.display = 'none';
+      document.getElementById('index-section').style.display = 'block';
+      fetchAllIndices();
+    }
+
     document.querySelectorAll('.tab').forEach(function(tab, idx) {
       tab.addEventListener('touchend', function() {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         tab.classList.add('active');
-        if (idx === 0) {
-          currentTab = 'watchlist';
-          document.getElementById('stock-list').parentElement.style.display = 'block';
-          document.getElementById('news-section').style.display = 'none';
-          // 갱신버튼/요약카드 보이기
-          document.getElementById('refresh-btn').style.display = 'flex';
-          document.querySelector('.last-update').style.display = 'block';
-          document.querySelector('.summary-card').style.display = 'block';
-          document.querySelector('.section-header').style.display = 'flex';
-          document.getElementById('stock-list').style.display = 'flex';
-        } else if (idx === 1) {
-          currentTab = 'news';
-          document.getElementById('refresh-btn').style.display = 'none';
-          document.querySelector('.last-update').style.display = 'none';
-          document.querySelector('.summary-card').style.display = 'none';
-          document.querySelector('.section-header').style.display = 'none';
-          document.getElementById('stock-list').style.display = 'none';
-          document.getElementById('news-section').style.display = 'block';
-          initNewsTab();
-        }
+        if (idx === 0) { currentTab = 'watchlist'; showWatchlist(); }
+        else if (idx === 1) { currentTab = 'news'; showNews(); }
+        else if (idx === 2) { currentTab = 'memo'; }
       });
+    });
+
+    // 하단 네비 지수 탭
+    document.getElementById('nav-index').addEventListener('touchend', function() {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      currentTab = 'index';
+      showIndex();
     });
 
     // ════ 뉴스 탭 기능 ════
