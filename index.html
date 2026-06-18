@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko" style="background:#ffffff">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>JD 투자 대시보드</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #ffffff;
+      --card:    #f9fafb;
+      --border:  #e5e7eb;
+      --accent:  #2563eb;
+      --green:   #16a34a;
+      --red:     #dc2626;
+      --muted:   #9ca3af;
+      --text:    #111827;
+      --subtext: #6b7280;
+    }
+    body {
+      background: #ffffff;
+      color: var(--text);
+      font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
+      min-height: 100dvh;
+      padding-bottom: 80px;
+    }
+    .header {
+      padding: 52px 20px 16px;
+      background: #ffffff;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .greeting { font-size: 13px; color: var(--subtext); }
+    .header-date { font-size: 12px; color: var(--muted); }
+    .header-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .header-title span { color: var(--accent); }
+
+    .tabs { background: #ffffff; display: flex; gap: 6px; padding: 12px 20px 0; }
+    .tab {
+      padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border); background: #ffffff; color: var(--subtext);
+    }
+    .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .refresh-btn {
+      margin: 16px 20px 0; width: calc(100% - 40px); padding: 13px;
+      background: var(--accent); border: none; border-radius: 14px;
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .refresh-btn:disabled { opacity: 0.6; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { display: inline-block; animation: spin 0.8s linear infinite; }
+
+    .last-update { text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    .summary-card {
+      margin: 12px 20px; background: var(--card);
+      border: 1px solid var(--border); border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 20px;
+    }
+    .summary-label { font-size: 12px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .summary-value { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 8px; }
+    .summary-change { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+    .summary-change.up { color: var(--green); background: rgba(22,163,74,0.08); }
+    .summary-change.down { color: var(--red); background: rgba(220,38,38,0.08); }
+    .summary-change.flat { color: var(--muted); background: rgba(156,163,175,0.1); }
+    .summary-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .stat-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .stat-value { font-size: 16px; font-weight: 600; }
+    .stat-value.up { color: var(--green); }
+    .stat-value.down { color: var(--red); }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 10px; }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .stock-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+    .stock-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05); padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .stock-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; flex-shrink: 0; letter-spacing: -0.5px;
+    }
+    .icon-nvda { background: rgba(118,185,0,0.12); color: #5a8a00; }
+    .icon-avgo { background: rgba(204,50,50,0.10); color: #c03030; }
+    .icon-mu   { background: rgba(0,150,220,0.12); color: #0080bb; }
+    .icon-vrt  { background: rgba(255,140,0,0.12); color: #cc7000; }
+    .icon-cien { background: rgba(100,100,255,0.12); color: #5555cc; }
+    .icon-fix  { background: rgba(20,184,166,0.12); color: #0d9488; }
+    .icon-lite { background: rgba(236,72,153,0.12); color: #c2185b; }
+    .icon-aaoi { background: rgba(168,85,247,0.12); color: #7c3aed; }
+    .icon-spcx { background: rgba(234,179,8,0.12);  color: #b45309; }
+
+    .stock-info { flex: 1; min-width: 0; }
+    .stock-ticker { font-size: 15px; font-weight: 700; }
+    .stock-name { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stock-price-wrap { text-align: right; }
+    .stock-price { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stock-price.loading { color: var(--muted); }
+    .stock-change { font-size: 12px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .stock-change.up { color: var(--green); }
+    .stock-change.down { color: var(--red); }
+    .stock-change.flat { color: var(--muted); }
+
+    /* 에러 메시지 박스 */
+    .error-box {
+      margin: 12px 20px; padding: 14px 16px;
+      background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2);
+      border-radius: 14px; font-size: 13px; color: #b91c1c; display: none;
+    }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #ffffff; border-top: 1px solid var(--border);
+      display: flex; padding: 10px 0 24px;
+    }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; }
+    .nav-icon { font-size: 20px; }
+    .nav-label { font-size: 10px; color: var(--muted); font-weight: 500; }
+    .nav-item.active .nav-label { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-top">
+      <span class="greeting">준동의 포트폴리오</span>
+      <span class="header-date" id="today-date"></span>
+    </div>
+    <div class="header-title">JD <span>투자</span> 대시보드</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active">워치리스트</button>
+    <button class="tab">뉴스</button>
+    <button class="tab">메모</button>
+  </div>
+
+  <button class="refresh-btn" id="refresh-btn" onclick="fetchAllPrices()">
+    🔄 주가 갱신
+  </button>
+  <div class="last-update" id="last-update">아직 갱신 전 — 버튼을 눌러주세요</div>
+
+  <!-- 에러 안내 박스 (평소엔 숨김) -->
+  <div class="error-box" id="error-box"></div>
+
+  <div class="summary-card" style="margin-top:12px;">
+    <div class="summary-label">오늘의 변동</div>
+    <div class="summary-value" id="total-change-val">—</div>
+    <div class="summary-change flat" id="total-change-pct">갱신 후 표시됩니다</div>
+    <div class="summary-stats">
+      <div><div class="stat-label">보유 종목</div><div class="stat-value" id="stat-total">9개</div></div>
+      <div><div class="stat-label">오늘 변동</div><div class="stat-value" id="stat-change">—</div></div>
+      <div><div class="stat-label">상승 종목</div><div class="stat-value up" id="stat-up">—</div></div>
+      <div><div class="stat-label">하락 종목</div><div class="stat-value down" id="stat-down">—</div></div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:8px;">
+    <span class="section-title">워치리스트</span>
+  </div>
+
+  <div class="stock-list" id="stock-list"></div>
+
+  <div class="bottom-nav">
+    <div class="nav-item active">
+      <div class="nav-icon">📈</div>
+      <div class="nav-label" style="color:#2563eb;">홈</div>
+    </div>
+    <div class="nav-item"><div class="nav-icon">📰</div><div class="nav-label">뉴스</div></div>
+    <div class="nav-item"><div class="nav-icon">🔔</div><div class="nav-label">알림</div></div>
+    <div class="nav-item"><div class="nav-icon">📝</div><div class="nav-label">메모</div></div>
+    <div class="nav-item"><div class="nav-icon">⚙️</div><div class="nav-label">설정</div></div>
+  </div>
+
+  <script>
+    // ── 종목 목록 ──
+    var STOCKS = [
+      { ticker: 'NVDA', name: 'Nvidia Corporation',      iconClass: 'icon-nvda' },
+      { ticker: 'AVGO', name: 'Broadcom Inc.',           iconClass: 'icon-avgo' },
+      { ticker: 'MU',   name: 'Micron Technology',       iconClass: 'icon-mu'   },
+      { ticker: 'VRT',  name: 'Vertiv Holdings',         iconClass: 'icon-vrt'  },
+      { ticker: 'CIEN', name: 'Ciena Corporation',       iconClass: 'icon-cien' },
+      { ticker: 'FIX',  name: 'Comfort Systems USA',     iconClass: 'icon-fix'  },
+      { ticker: 'LITE', name: 'Lumentum Holdings',       iconClass: 'icon-lite' },
+      { ticker: 'AAOI', name: 'Applied Optoelectronics', iconClass: 'icon-aaoi' },
+      { ticker: 'SPCX', name: 'Space ETF',               iconClass: 'icon-spcx' },
+    ];
+
+    // 날짜 표시
+    var d = new Date();
+    document.getElementById('today-date').textContent =
+      d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' });
+
+    // 카드 틀 그리기
+    function renderStockCards() {
+      var list = document.getElementById('stock-list');
+      list.innerHTML = '';
+      for (var i = 0; i < STOCKS.length; i++) {
+        var s = STOCKS[i];
+        var card = document.createElement('div');
+        card.className = 'stock-card';
+        card.innerHTML =
+          '<div class="stock-icon ' + s.iconClass + '">' + s.ticker + '</div>' +
+          '<div class="stock-info">' +
+            '<div class="stock-ticker">' + s.ticker + '</div>' +
+            '<div class="stock-name">' + s.name + '</div>' +
+          '</div>' +
+          '<div class="stock-price-wrap">' +
+            '<div class="stock-price loading" id="price-' + s.ticker + '">—</div>' +
+            '<div class="stock-change flat" id="change-' + s.ticker + '">갱신 전</div>' +
+          '</div>';
+        list.appendChild(card);
+      }
+    }
+
+    // ── 주가 불러오기 ──
+    // Yahoo Finance를 직접 호출하되, CORS 문제 우회를 위해
+    // corsproxy.io 무료 프록시를 사용
+    async function fetchPrice(ticker) {
+      // 방법 1: Yahoo Finance v8 API (직접)
+      var urls = [
+        'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d',
+        'https://query2.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d',
+        'https://corsproxy.io/?' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d')
+      ];
+
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          var res = await fetch(urls[i], { signal: AbortSignal.timeout(8000) });
+          if (!res.ok) continue;
+          var data = await res.json();
+          var meta = data.chart.result[0].meta;
+          var price = meta.regularMarketPrice;
+          var prev  = meta.chartPreviousClose;
+          var chg   = price - prev;
+          var pct   = (chg / prev) * 100;
+          return { price: price, change: chg, pct: pct, ok: true };
+        } catch(e) {
+          // 다음 URL 시도
+        }
+      }
+      return { ok: false };
+    }
+
+    async function fetchAllPrices() {
+      var btn = document.getElementById('refresh-btn');
+      var errBox = document.getElementById('error-box');
+      errBox.style.display = 'none';
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinning">🔄</span> 불러오는 중...';
+
+      var upCount = 0;
+      var downCount = 0;
+      var failCount = 0;
+
+      for (var i = 0; i < STOCKS.length; i++) {
+        var s = STOCKS[i];
+        var result = await fetchPrice(s.ticker);
+        var priceEl  = document.getElementById('price-'  + s.ticker);
+        var changeEl = document.getElementById('change-' + s.ticker);
+
+        if (result.ok) {
+          priceEl.textContent = '$' + result.price.toFixed(2);
+          priceEl.classList.remove('loading');
+          if (result.change >= 0) {
+            changeEl.textContent = '▲ +' + result.pct.toFixed(2) + '%';
+            changeEl.className = 'stock-change up';
+            upCount++;
+          } else {
+            changeEl.textContent = '▼ ' + result.pct.toFixed(2) + '%';
+            changeEl.className = 'stock-change down';
+            downCount++;
+          }
+        } else {
+          priceEl.textContent = '오류';
+          changeEl.textContent = '재시도';
+          changeEl.className = 'stock-change flat';
+          failCount++;
+        }
+      }
+
+      // 요약 업데이트
+      document.getElementById('stat-up').textContent   = upCount   + '개';
+      document.getElementById('stat-down').textContent = downCount + '개';
+      document.getElementById('total-change-val').textContent = upCount + '↑  ' + downCount + '↓';
+      var pctEl = document.getElementById('total-change-pct');
+      pctEl.textContent = '상승 ' + upCount + '개 · 하락 ' + downCount + '개';
+      pctEl.className = 'summary-change ' + (upCount >= downCount ? 'up' : 'down');
+
+      btn.disabled = false;
+      btn.innerHTML = '🔄 주가 갱신';
+
+      var now = new Date();
+      document.getElementById('last-update').textContent =
+        '마지막 갱신: ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+      // 오류 종목 있으면 안내
+      if (failCount > 0) {
+        errBox.style.display = 'block';
+        errBox.textContent = '⚠️ ' + failCount + '개 종목을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 눌러보세요.';
+      }
+    }
+
+    renderStockCards();
+  </script>
+
+</body>
+</html>
