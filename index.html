@@ -25,8 +25,14 @@
       font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
       min-height: 100dvh;
       padding-bottom: 80px;
+      overflow-x: hidden;
     }
 
+    /* ── 메인 / 상세 페이지 전환 ── */
+    .page { transition: transform 0.3s ease, opacity 0.3s ease; }
+    .page.hidden { display: none; }
+
+    /* ── 헤더 ── */
     .header {
       padding: 52px 20px 16px;
       background: #ffffff;
@@ -38,10 +44,12 @@
     .header-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
     .header-title span { color: var(--accent); }
 
+    /* ── 탭 ── */
     .tabs { background: #ffffff; display: flex; gap: 6px; padding: 12px 20px 0; }
     .tab { padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #ffffff; color: var(--subtext); }
     .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+    /* ── 갱신 버튼 ── */
     .refresh-btn {
       margin: 16px 20px 0; width: calc(100% - 40px); padding: 13px;
       background: var(--accent); border: none; border-radius: 14px;
@@ -54,6 +62,7 @@
     .spinning { display: inline-block; animation: spin 0.8s linear infinite; }
     .last-update { text-align: center; font-size: 11px; color: var(--muted); margin-top: 6px; }
 
+    /* ── 요약 카드 ── */
     .summary-card {
       margin: 12px 20px; background: var(--card);
       border: 1px solid var(--border); border-radius: 20px;
@@ -71,70 +80,36 @@
     .stat-value.up   { color: var(--green); }
     .stat-value.down { color: var(--red); }
 
+    /* ── 섹션 헤더 ── */
     .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 10px; }
     .section-title { font-size: 13px; font-weight: 700; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.06em; }
     .section-btns { display: flex; gap: 8px; }
-    .edit-btn {
-      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-      border: 1px solid var(--border); background: #ffffff; color: var(--subtext);
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
-    }
+    .edit-btn { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: #ffffff; color: var(--subtext); cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .edit-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
-    .add-btn {
-      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-      border: 1px solid var(--accent); background: #ffffff; color: var(--accent);
-      cursor: pointer; -webkit-tap-highlight-color: transparent;
-    }
+    .add-btn { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid var(--accent); background: #ffffff; color: var(--accent); cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
     /* ── 종목 카드 ── */
     .stock-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
-
     .stock-card {
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.05); padding: 14px 16px;
       display: flex; align-items: center; gap: 12px;
-      position: relative;
-      transition: box-shadow 0.2s, transform 0.2s;
+      position: relative; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
-
-    /* 드래그 중인 카드 */
-    .stock-card.dragging {
-      opacity: 0.5;
-      border: 2px dashed var(--accent);
-    }
-
-    /* 드래그 대상 위치 표시 */
-    .stock-card.drag-over {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(37,99,235,0.3);
-    }
-
-    /* X 삭제 버튼 */
+    .stock-card.dragging { opacity: 0.5; border: 2px dashed var(--accent); }
+    .stock-card.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(37,99,235,0.3); }
     .delete-btn {
-      display: none;
-      position: absolute; top: -8px; left: -8px;
-      width: 24px; height: 24px;
-      background: var(--red); color: #fff;
-      border: 2px solid #fff; border-radius: 50%;
-      font-size: 14px; font-weight: 700;
-      align-items: center; justify-content: center;
-      cursor: pointer; z-index: 5;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      -webkit-tap-highlight-color: transparent;
+      display: none; position: absolute; top: -8px; left: -8px;
+      width: 24px; height: 24px; background: var(--red); color: #fff;
+      border: 2px solid #fff; border-radius: 50%; font-size: 14px; font-weight: 700;
+      align-items: center; justify-content: center; cursor: pointer; z-index: 5;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2); -webkit-tap-highlight-color: transparent;
     }
     .edit-mode .delete-btn { display: flex; }
-
-    /* 드래그 핸들 (편집 모드에서만 보임) */
     .drag-handle {
-      display: none;
-      color: #c0c8d8;
-      font-size: 22px;
-      cursor: grab;
-      padding: 0 0 0 8px;
-      flex-shrink: 0;
-      line-height: 1;
+      display: none; color: #c0c8d8; font-size: 22px; cursor: grab;
+      padding: 0 0 0 8px; flex-shrink: 0; line-height: 1;
     }
     .edit-mode .drag-handle { display: flex; align-items: center; }
 
@@ -165,51 +140,98 @@
     .stock-change.down { color: var(--red); }
     .stock-change.flat { color: var(--muted); }
 
-    /* ── 종목 추가 팝업 ── */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4); z-index: 100;
-      align-items: flex-end; justify-content: center;
+    /* ════════════════════════════════
+       상세 페이지
+    ════════════════════════════════ */
+    #detail-page {
+      position: fixed; inset: 0;
+      background: #ffffff; z-index: 50;
+      overflow-y: auto; padding-bottom: 40px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
     }
+    #detail-page.open { transform: translateX(0); }
+
+    /* 상세 헤더 */
+    .detail-header {
+      padding: 52px 20px 16px;
+      background: #ffffff;
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .back-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--card); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .detail-title-wrap { flex: 1; }
+    .detail-ticker { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .detail-name { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* 가격 섹션 */
+    .detail-price-section { padding: 20px 20px 0; }
+    .detail-price { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; }
+    .detail-change { display: inline-flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 600; margin-top: 6px; padding: 5px 12px; border-radius: 20px; }
+    .detail-change.up   { color: var(--green); background: rgba(22,163,74,0.08); }
+    .detail-change.down { color: var(--red);   background: rgba(220,38,38,0.08); }
+    .detail-change.flat { color: var(--muted); background: rgba(156,163,175,0.1); }
+
+    /* 차트 기간 탭 */
+    .chart-tabs { display: flex; gap: 6px; padding: 16px 20px 8px; }
+    .chart-tab {
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: #fff; color: var(--subtext);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .chart-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* SVG 차트 컨테이너 */
+    .chart-wrap {
+      margin: 0 20px; height: 180px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; position: relative;
+    }
+    .chart-wrap svg { width: 100%; height: 100%; }
+    .chart-loading {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: var(--muted);
+    }
+
+    /* 상세 지표 그리드 */
+    .detail-stats {
+      margin: 16px 20px; display: grid;
+      grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .detail-stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px;
+    }
+    .ds-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .ds-value { font-size: 16px; font-weight: 700; }
+    .ds-value.up   { color: var(--green); }
+    .ds-value.down { color: var(--red); }
+
+    /* ── 추가 팝업 ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: flex-end; justify-content: center; }
     .modal-overlay.show { display: flex; }
-    .modal {
-      background: #fff; border-radius: 24px 24px 0 0;
-      padding: 24px 20px 40px; width: 100%;
-      animation: slideUp 0.25s ease;
-    }
+    .modal { background: #fff; border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; animation: slideUp 0.25s ease; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
     .modal-sub { font-size: 13px; color: var(--subtext); margin-bottom: 20px; }
-    .modal-input {
-      width: 100%; padding: 14px 16px;
-      border: 1.5px solid var(--border); border-radius: 14px;
-      font-size: 18px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; outline: none; margin-bottom: 12px;
-    }
+    .modal-input { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 14px; font-size: 18px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; outline: none; margin-bottom: 12px; }
     .modal-input:focus { border-color: var(--accent); }
-    .modal-confirm {
-      width: 100%; padding: 14px;
-      background: var(--accent); border: none; border-radius: 14px;
-      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px;
-    }
-    .modal-cancel {
-      width: 100%; padding: 14px;
-      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-      color: var(--subtext); font-size: 15px; font-weight: 600; cursor: pointer;
-    }
+    .modal-confirm { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: 14px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+    .modal-cancel { width: 100%; padding: 14px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; color: var(--subtext); font-size: 15px; font-weight: 600; cursor: pointer; }
     .modal-error { font-size: 13px; color: var(--red); margin-bottom: 10px; display: none; }
 
-    .error-box {
-      margin: 12px 20px; padding: 14px 16px;
-      background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2);
-      border-radius: 14px; font-size: 13px; color: #b91c1c; display: none;
-    }
+    .error-box { margin: 12px 20px; padding: 14px 16px; background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.2); border-radius: 14px; font-size: 13px; color: #b91c1c; display: none; }
 
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: #ffffff; border-top: 1px solid var(--border);
-      display: flex; padding: 10px 0 24px;
-    }
+    /* ── 하단 네비 ── */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid var(--border); display: flex; padding: 10px 0 24px; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; }
     .nav-icon { font-size: 20px; }
     .nav-label { font-size: 10px; color: var(--muted); font-weight: 500; }
@@ -218,49 +240,108 @@
 </head>
 <body>
 
-  <div class="header">
-    <div class="header-top">
-      <span class="greeting">준동의 포트폴리오</span>
-      <span class="header-date" id="today-date"></span>
+  <!-- ════ 메인 페이지 ════ -->
+  <div id="main-page">
+    <div class="header">
+      <div class="header-top">
+        <span class="greeting">준동의 포트폴리오</span>
+        <span class="header-date" id="today-date"></span>
+      </div>
+      <div class="header-title">JD <span>투자</span> 대시보드</div>
     </div>
-    <div class="header-title">JD <span>투자</span> 대시보드</div>
+
+    <div class="tabs">
+      <button class="tab active">워치리스트</button>
+      <button class="tab">뉴스</button>
+      <button class="tab">메모</button>
+    </div>
+
+    <button class="refresh-btn" id="refresh-btn" onclick="fetchAllPrices()">🔄 주가 갱신</button>
+    <div class="last-update" id="last-update">아직 갱신 전 — 버튼을 눌러주세요</div>
+    <div class="error-box" id="error-box"></div>
+
+    <div class="summary-card" style="margin-top:12px;">
+      <div class="summary-label">오늘의 변동</div>
+      <div class="summary-value" id="total-change-val">—</div>
+      <div class="summary-change flat" id="total-change-pct">갱신 후 표시됩니다</div>
+      <div class="summary-stats">
+        <div><div class="stat-label">보유 종목</div><div class="stat-value" id="stat-total">—</div></div>
+        <div><div class="stat-label">오늘 변동</div><div class="stat-value" id="stat-change">—</div></div>
+        <div><div class="stat-label">상승 종목</div><div class="stat-value up" id="stat-up">—</div></div>
+        <div><div class="stat-label">하락 종목</div><div class="stat-value down" id="stat-down">—</div></div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:8px;">
+      <span class="section-title">워치리스트</span>
+      <div class="section-btns">
+        <button class="edit-btn" id="edit-btn" onclick="toggleEditMode()">편집</button>
+        <button class="add-btn" onclick="openModal()">+ 추가</button>
+      </div>
+    </div>
+
+    <div class="stock-list" id="stock-list"></div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active">워치리스트</button>
-    <button class="tab">뉴스</button>
-    <button class="tab">메모</button>
-  </div>
+  <!-- ════ 상세 페이지 ════ -->
+  <div id="detail-page">
+    <div class="detail-header">
+      <div class="back-btn" onclick="closeDetail()">‹</div>
+      <div class="detail-title-wrap">
+        <div class="detail-ticker" id="d-ticker">—</div>
+        <div class="detail-name" id="d-name">—</div>
+      </div>
+    </div>
 
-  <button class="refresh-btn" id="refresh-btn" onclick="fetchAllPrices()">
-    🔄 주가 갱신
-  </button>
-  <div class="last-update" id="last-update">아직 갱신 전 — 버튼을 눌러주세요</div>
-  <div class="error-box" id="error-box"></div>
+    <div class="detail-price-section">
+      <div class="detail-price" id="d-price">—</div>
+      <div class="detail-change flat" id="d-change">—</div>
+    </div>
 
-  <div class="summary-card" style="margin-top:12px;">
-    <div class="summary-label">오늘의 변동</div>
-    <div class="summary-value" id="total-change-val">—</div>
-    <div class="summary-change flat" id="total-change-pct">갱신 후 표시됩니다</div>
-    <div class="summary-stats">
-      <div><div class="stat-label">보유 종목</div><div class="stat-value" id="stat-total">—</div></div>
-      <div><div class="stat-label">오늘 변동</div><div class="stat-value" id="stat-change">—</div></div>
-      <div><div class="stat-label">상승 종목</div><div class="stat-value up" id="stat-up">—</div></div>
-      <div><div class="stat-label">하락 종목</div><div class="stat-value down" id="stat-down">—</div></div>
+    <!-- 차트 기간 탭 -->
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchChartPeriod(this,'1d')">1일</button>
+      <button class="chart-tab" onclick="switchChartPeriod(this,'5d')">5일</button>
+      <button class="chart-tab" onclick="switchChartPeriod(this,'1mo')">1달</button>
+      <button class="chart-tab" onclick="switchChartPeriod(this,'3mo')">3달</button>
+    </div>
+
+    <!-- SVG 차트 -->
+    <div class="chart-wrap">
+      <div class="chart-loading" id="chart-loading">차트 불러오는 중...</div>
+      <svg id="chart-svg" viewBox="0 0 400 180" preserveAspectRatio="none"></svg>
+    </div>
+
+    <!-- 상세 지표 -->
+    <div class="detail-stats">
+      <div class="detail-stat-card">
+        <div class="ds-label">시가</div>
+        <div class="ds-value" id="d-open">—</div>
+      </div>
+      <div class="detail-stat-card">
+        <div class="ds-label">전일 종가</div>
+        <div class="ds-value" id="d-prev">—</div>
+      </div>
+      <div class="detail-stat-card">
+        <div class="ds-label">52주 최고</div>
+        <div class="ds-value up" id="d-high52">—</div>
+      </div>
+      <div class="detail-stat-card">
+        <div class="ds-label">52주 최저</div>
+        <div class="ds-value down" id="d-low52">—</div>
+      </div>
+      <div class="detail-stat-card">
+        <div class="ds-label">거래량</div>
+        <div class="ds-value" id="d-vol">—</div>
+      </div>
+      <div class="detail-stat-card">
+        <div class="ds-label">시가총액</div>
+        <div class="ds-value" id="d-mktcap">—</div>
+      </div>
     </div>
   </div>
 
-  <div class="section-header" style="margin-top:8px;">
-    <span class="section-title">워치리스트</span>
-    <div class="section-btns">
-      <button class="edit-btn" id="edit-btn" onclick="toggleEditMode()">편집</button>
-      <button class="add-btn" onclick="openModal()">+ 추가</button>
-    </div>
-  </div>
-
-  <div class="stock-list" id="stock-list"></div>
-
-  <!-- 종목 추가 팝업 -->
+  <!-- 추가 팝업 -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
     <div class="modal">
       <div class="modal-title">종목 추가</div>
@@ -275,10 +356,7 @@
   </div>
 
   <div class="bottom-nav">
-    <div class="nav-item active">
-      <div class="nav-icon">📈</div>
-      <div class="nav-label" style="color:#2563eb;">홈</div>
-    </div>
+    <div class="nav-item active"><div class="nav-icon">📈</div><div class="nav-label" style="color:#2563eb;">홈</div></div>
     <div class="nav-item"><div class="nav-icon">📰</div><div class="nav-label">뉴스</div></div>
     <div class="nav-item"><div class="nav-icon">🔔</div><div class="nav-label">알림</div></div>
     <div class="nav-item"><div class="nav-icon">📝</div><div class="nav-label">메모</div></div>
@@ -297,25 +375,18 @@
       { ticker: 'AAOI', name: 'Applied Optoelectronics', iconClass: 'icon-aaoi' },
       { ticker: 'SPCX', name: 'Space ETF',               iconClass: 'icon-spcx' },
     ];
-
-    var ICON_MAP = {
-      'NVDA':'icon-nvda','AVGO':'icon-avgo','MU':'icon-mu','VRT':'icon-vrt',
-      'CIEN':'icon-cien','FIX':'icon-fix','LITE':'icon-lite','AAOI':'icon-aaoi','SPCX':'icon-spcx'
-    };
+    var ICON_MAP = { 'NVDA':'icon-nvda','AVGO':'icon-avgo','MU':'icon-mu','VRT':'icon-vrt','CIEN':'icon-cien','FIX':'icon-fix','LITE':'icon-lite','AAOI':'icon-aaoi','SPCX':'icon-spcx' };
 
     function loadStocks() {
-      try {
-        var saved = localStorage.getItem('watchlist');
-        if (saved) return JSON.parse(saved);
-      } catch(e) {}
+      try { var s = localStorage.getItem('watchlist'); if (s) return JSON.parse(s); } catch(e) {}
       return DEFAULT_STOCKS.slice();
     }
-    function saveStocks() {
-      try { localStorage.setItem('watchlist', JSON.stringify(STOCKS)); } catch(e) {}
-    }
+    function saveStocks() { try { localStorage.setItem('watchlist', JSON.stringify(STOCKS)); } catch(e) {} }
 
     var STOCKS = loadStocks();
     var isEditMode = false;
+    var currentDetailTicker = null;
+    var currentPeriod = '1d';
 
     // 날짜
     var d = new Date();
@@ -328,7 +399,6 @@
       list.innerHTML = '';
       if (isEditMode) list.classList.add('edit-mode');
       else list.classList.remove('edit-mode');
-
       document.getElementById('stat-total').textContent = STOCKS.length + '개';
 
       for (var i = 0; i < STOCKS.length; i++) {
@@ -338,11 +408,9 @@
           card.className = 'stock-card';
           card.id = 'card-' + stock.ticker;
           card.setAttribute('data-ticker', stock.ticker);
-          card.draggable = false; // 터치 드래그로만 처리
 
           card.innerHTML =
-            '<div class="delete-btn" onclick="deleteStock(\'' + stock.ticker + '\')">×</div>' +
-            
+            '<div class="delete-btn" onclick="event.stopPropagation();deleteStock(\'' + stock.ticker + '\')">×</div>' +
             '<div class="stock-icon ' + iconClass + '">' + stock.ticker + '</div>' +
             '<div class="stock-info">' +
               '<div class="stock-ticker">' + stock.ticker + '</div>' +
@@ -354,118 +422,232 @@
             '</div>' +
             '<div class="drag-handle" id="handle-' + stock.ticker + '">⠿</div>';
 
+          // 카드 탭 → 상세 이동 (편집 모드 아닐 때만)
+          card.addEventListener('click', function() {
+            if (!isEditMode) openDetail(stock.ticker, stock.name);
+          });
+
           list.appendChild(card);
 
-          // 터치 드래그 이벤트 (핸들에만 적용)
+          // 드래그 핸들
           var handle = card.querySelector('.drag-handle');
           handle.addEventListener('touchstart', onTouchStart, { passive: false });
         })(STOCKS[i]);
       }
     }
 
-    // ── 터치 드래그 로직 ──
-    var dragSrc = null;      // 드래그 중인 카드 요소
-    var dragTicker = null;   // 드래그 중인 종목 ticker
-    var startY = 0;
-    var origIndex = 0;
+    // ════ 상세 페이지 ════
+    function openDetail(ticker, name) {
+      currentDetailTicker = ticker;
+      currentPeriod = '1d';
 
-    function onTouchStart(e) {
-      if (!isEditMode) return;
-      e.preventDefault();
+      // 헤더 정보
+      document.getElementById('d-ticker').textContent = ticker;
+      document.getElementById('d-name').textContent = name;
 
-      var card = e.target.closest('.stock-card');
-      if (!card) return;
+      // 기존 주가 정보 복사 (이미 갱신했으면)
+      var priceEl = document.getElementById('price-' + ticker);
+      var changeEl = document.getElementById('change-' + ticker);
+      document.getElementById('d-price').textContent = priceEl ? priceEl.textContent : '—';
+      var dChange = document.getElementById('d-change');
+      dChange.textContent = changeEl ? changeEl.textContent : '—';
+      dChange.className = 'detail-change ' + (changeEl ? (changeEl.classList.contains('up') ? 'up' : changeEl.classList.contains('down') ? 'down' : 'flat') : 'flat');
 
-      dragTicker = card.getAttribute('data-ticker');
-      dragSrc = card;
-      startY = e.touches[0].clientY;
-      origIndex = getCardIndex(card);
-
-      card.classList.add('dragging');
-
-      document.addEventListener('touchmove', onTouchMove, { passive: false });
-      document.addEventListener('touchend', onTouchEnd);
-    }
-
-    function onTouchMove(e) {
-      e.preventDefault();
-      var y = e.touches[0].clientY;
-      var cards = document.querySelectorAll('.stock-card:not(.dragging)');
-
-      // 현재 터치 위치에 있는 카드 찾기
-      var target = null;
-      for (var i = 0; i < cards.length; i++) {
-        var rect = cards[i].getBoundingClientRect();
-        var mid = rect.top + rect.height / 2;
-        if (y < mid) { target = cards[i]; break; }
-      }
-
-      // drag-over 표시 초기화
-      document.querySelectorAll('.stock-card').forEach(function(c) {
-        c.classList.remove('drag-over');
+      // 상세 지표 초기화
+      ['d-open','d-prev','d-high52','d-low52','d-vol','d-mktcap'].forEach(function(id) {
+        document.getElementById(id).textContent = '불러오는 중...';
       });
-      if (target) target.classList.add('drag-over');
+
+      // 차트 탭 초기화
+      document.querySelectorAll('.chart-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.chart-tab')[0].classList.add('active');
+
+      // 상세 페이지 열기
+      document.getElementById('detail-page').classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      // 데이터 불러오기
+      loadDetailData(ticker, '1d');
     }
 
-    function onTouchEnd(e) {
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
+    function closeDetail() {
+      document.getElementById('detail-page').classList.remove('open');
+      document.body.style.overflow = '';
+    }
 
-      if (!dragSrc) return;
-      dragSrc.classList.remove('dragging');
+    function switchChartPeriod(btn, period) {
+      document.querySelectorAll('.chart-tab').forEach(function(t) { t.classList.remove('active'); });
+      btn.classList.add('active');
+      currentPeriod = period;
+      if (currentDetailTicker) loadDetailData(currentDetailTicker, period);
+    }
 
-      // drag-over 된 카드 찾기
-      var overCard = document.querySelector('.stock-card.drag-over');
-      if (overCard) overCard.classList.remove('drag-over');
+    async function loadDetailData(ticker, period) {
+      document.getElementById('chart-loading').style.display = 'flex';
+      document.getElementById('chart-svg').innerHTML = '';
 
-      if (overCard && overCard !== dragSrc) {
-        var fromIdx = STOCKS.findIndex(function(s) { return s.ticker === dragTicker; });
-        var toTicker = overCard.getAttribute('data-ticker');
-        var toIdx = STOCKS.findIndex(function(s) { return s.ticker === toTicker; });
+      // interval 결정
+      var intervalMap = { '1d': '5m', '5d': '30m', '1mo': '1d', '3mo': '1d' };
+      var interval = intervalMap[period] || '1d';
 
-        if (fromIdx !== -1 && toIdx !== -1) {
-          // 배열에서 순서 바꾸기
-          var item = STOCKS.splice(fromIdx, 1)[0];
-          STOCKS.splice(toIdx, 0, item);
-          saveStocks();
-          renderStockCards();
-        }
+      var urls = [
+        'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=' + interval + '&range=' + period,
+        'https://query2.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=' + interval + '&range=' + period,
+        'https://corsproxy.io/?' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=' + interval + '&range=' + period)
+      ];
+
+      var data = null;
+      for (var i = 0; i < urls.length; i++) {
+        try {
+          var res = await fetch(urls[i], { signal: AbortSignal.timeout(10000) });
+          if (!res.ok) continue;
+          data = await res.json();
+          break;
+        } catch(e) {}
       }
 
-      dragSrc = null;
-      dragTicker = null;
-    }
+      document.getElementById('chart-loading').style.display = 'none';
 
-    function getCardIndex(card) {
-      var cards = document.querySelectorAll('.stock-card');
-      for (var i = 0; i < cards.length; i++) {
-        if (cards[i] === card) return i;
+      if (!data || !data.chart || !data.chart.result) {
+        document.getElementById('chart-loading').textContent = '차트를 불러오지 못했어요';
+        document.getElementById('chart-loading').style.display = 'flex';
+        return;
       }
-      return 0;
+
+      var result = data.chart.result[0];
+      var meta   = result.meta;
+      var quotes = result.indicators.quote[0];
+      var closes = quotes.close;
+      var timestamps = result.timestamp;
+
+      // 상세 지표 업데이트
+      var price    = meta.regularMarketPrice;
+      var prev     = meta.chartPreviousClose;
+      var chg      = price - prev;
+      var pct      = (chg / prev) * 100;
+
+      document.getElementById('d-price').textContent = '$' + price.toFixed(2);
+      var dChange = document.getElementById('d-change');
+      if (chg >= 0) {
+        dChange.textContent = '▲ +$' + chg.toFixed(2) + '  (+' + pct.toFixed(2) + '%)';
+        dChange.className = 'detail-change up';
+      } else {
+        dChange.textContent = '▼ $' + chg.toFixed(2) + '  (' + pct.toFixed(2) + '%)';
+        dChange.className = 'detail-change down';
+      }
+
+      document.getElementById('d-open').textContent  = '$' + (meta.regularMarketOpen || meta.open || '—').toFixed ? '$' + (meta.regularMarketOpen || 0).toFixed(2) : '—';
+      document.getElementById('d-prev').textContent  = '$' + prev.toFixed(2);
+      document.getElementById('d-high52').textContent = meta.fiftyTwoWeekHigh ? '$' + meta.fiftyTwoWeekHigh.toFixed(2) : '—';
+      document.getElementById('d-low52').textContent  = meta.fiftyTwoWeekLow  ? '$' + meta.fiftyTwoWeekLow.toFixed(2)  : '—';
+
+      var vol = meta.regularMarketVolume;
+      document.getElementById('d-vol').textContent = vol
+        ? (vol >= 1e9 ? (vol/1e9).toFixed(1)+'B' : vol >= 1e6 ? (vol/1e6).toFixed(1)+'M' : (vol/1e3).toFixed(0)+'K')
+        : '—';
+
+      var mktcap = meta.marketCap;
+      document.getElementById('d-mktcap').textContent = mktcap
+        ? (mktcap >= 1e12 ? '$'+(mktcap/1e12).toFixed(2)+'T' : mktcap >= 1e9 ? '$'+(mktcap/1e9).toFixed(1)+'B' : '$'+(mktcap/1e6).toFixed(0)+'M')
+        : '—';
+
+      // ── SVG 차트 그리기 ──
+      var validCloses = closes.filter(function(v) { return v !== null && v !== undefined; });
+      if (validCloses.length < 2) return;
+
+      var W = 400, H = 180, PAD = 10;
+      var minV = Math.min.apply(null, validCloses);
+      var maxV = Math.max.apply(null, validCloses);
+      var range = maxV - minV || 1;
+
+      // 포인트 계산
+      var pts = [];
+      var validIdx = 0;
+      for (var j = 0; j < closes.length; j++) {
+        if (closes[j] === null || closes[j] === undefined) continue;
+        var x = PAD + (validIdx / (validCloses.length - 1)) * (W - PAD * 2);
+        var y = H - PAD - ((closes[j] - minV) / range) * (H - PAD * 2);
+        pts.push({ x: x, y: y });
+        validIdx++;
+      }
+
+      // 선 색깔 (상승=초록, 하락=빨강)
+      var lineColor = chg >= 0 ? '#16a34a' : '#dc2626';
+      var fillColor = chg >= 0 ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)';
+
+      // path 문자열
+      var linePath = 'M ' + pts[0].x + ' ' + pts[0].y;
+      for (var k = 1; k < pts.length; k++) linePath += ' L ' + pts[k].x + ' ' + pts[k].y;
+
+      var fillPath = linePath + ' L ' + pts[pts.length-1].x + ' ' + (H-PAD) + ' L ' + pts[0].x + ' ' + (H-PAD) + ' Z';
+
+      var svg = document.getElementById('chart-svg');
+      svg.innerHTML =
+        '<path d="' + fillPath + '" fill="' + fillColor + '" stroke="none"/>' +
+        '<path d="' + linePath + '" fill="none" stroke="' + lineColor + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
     }
 
-    // ── 편집 모드 ──
+    // ════ 편집/삭제/드래그 ════
     function toggleEditMode() {
       isEditMode = !isEditMode;
       var btn = document.getElementById('edit-btn');
-      if (isEditMode) {
-        btn.textContent = '완료';
-        btn.classList.add('active');
-      } else {
-        btn.textContent = '편집';
-        btn.classList.remove('active');
-      }
+      btn.textContent = isEditMode ? '완료' : '편집';
+      if (isEditMode) btn.classList.add('active'); else btn.classList.remove('active');
       renderStockCards();
     }
 
-    // ── 삭제 ──
     function deleteStock(ticker) {
       STOCKS = STOCKS.filter(function(s) { return s.ticker !== ticker; });
       saveStocks();
       renderStockCards();
     }
 
-    // ── 팝업 ──
+    var dragSrc = null, dragTicker = null;
+    function onTouchStart(e) {
+      if (!isEditMode) return;
+      e.preventDefault();
+      var card = e.target.closest('.stock-card');
+      if (!card) return;
+      dragTicker = card.getAttribute('data-ticker');
+      dragSrc = card;
+      card.classList.add('dragging');
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onTouchEnd);
+    }
+    function onTouchMove(e) {
+      e.preventDefault();
+      var y = e.touches[0].clientY;
+      var cards = document.querySelectorAll('.stock-card:not(.dragging)');
+      var target = null;
+      for (var i = 0; i < cards.length; i++) {
+        var rect = cards[i].getBoundingClientRect();
+        if (y < rect.top + rect.height / 2) { target = cards[i]; break; }
+      }
+      document.querySelectorAll('.stock-card').forEach(function(c) { c.classList.remove('drag-over'); });
+      if (target) target.classList.add('drag-over');
+    }
+    function onTouchEnd(e) {
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      if (!dragSrc) return;
+      dragSrc.classList.remove('dragging');
+      var overCard = document.querySelector('.stock-card.drag-over');
+      if (overCard) overCard.classList.remove('drag-over');
+      if (overCard && overCard !== dragSrc) {
+        var fromIdx = STOCKS.findIndex(function(s) { return s.ticker === dragTicker; });
+        var toTicker = overCard.getAttribute('data-ticker');
+        var toIdx = STOCKS.findIndex(function(s) { return s.ticker === toTicker; });
+        if (fromIdx !== -1 && toIdx !== -1) {
+          var item = STOCKS.splice(fromIdx, 1)[0];
+          STOCKS.splice(toIdx, 0, item);
+          saveStocks();
+          renderStockCards();
+        }
+      }
+      dragSrc = null; dragTicker = null;
+    }
+
+    // ════ 팝업 ════
     function openModal() {
       if (isEditMode) toggleEditMode();
       document.getElementById('ticker-input').value = '';
@@ -473,49 +655,25 @@
       document.getElementById('modal-overlay').classList.add('show');
       setTimeout(function() { document.getElementById('ticker-input').focus(); }, 300);
     }
-    function closeModal() {
-      document.getElementById('modal-overlay').classList.remove('show');
-    }
-    function closeModalOutside(e) {
-      if (e.target === document.getElementById('modal-overlay')) closeModal();
-    }
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+    function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
 
     async function confirmAdd() {
       var ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
       var errEl = document.getElementById('modal-error');
       errEl.style.display = 'none';
-
-      if (!ticker) {
-        errEl.textContent = '티커를 입력해주세요.';
-        errEl.style.display = 'block';
-        return;
-      }
+      if (!ticker) { errEl.textContent = '티커를 입력해주세요.'; errEl.style.display = 'block'; return; }
       for (var i = 0; i < STOCKS.length; i++) {
-        if (STOCKS[i].ticker === ticker) {
-          errEl.textContent = '이미 워치리스트에 있어요!';
-          errEl.style.display = 'block';
-          return;
-        }
+        if (STOCKS[i].ticker === ticker) { errEl.textContent = '이미 워치리스트에 있어요!'; errEl.style.display = 'block'; return; }
       }
-
-      errEl.textContent = '확인 중...';
-      errEl.style.display = 'block';
-      errEl.style.color = 'var(--subtext)';
-
+      errEl.textContent = '확인 중...'; errEl.style.display = 'block'; errEl.style.color = 'var(--subtext)';
       var name = await fetchStockName(ticker);
-      if (!name) {
-        errEl.textContent = '종목을 찾을 수 없어요. 티커를 다시 확인해주세요.';
-        errEl.style.display = 'block';
-        errEl.style.color = 'var(--red)';
-        return;
-      }
-
+      if (!name) { errEl.textContent = '종목을 찾을 수 없어요.'; errEl.style.display = 'block'; errEl.style.color = 'var(--red)'; return; }
       STOCKS.push({ ticker: ticker, name: name, iconClass: ICON_MAP[ticker] || 'icon-default' });
-      saveStocks();
-      closeModal();
-      renderStockCards();
+      saveStocks(); closeModal(); renderStockCards();
     }
 
+    // ════ API 공통 ════
     async function fetchStockName(ticker) {
       var urls = [
         'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker + '?interval=1d&range=1d',
@@ -562,9 +720,7 @@
       errBox.style.display = 'none';
       btn.disabled = true;
       btn.innerHTML = '<span class="spinning">🔄</span> 불러오는 중...';
-
       var upCount = 0, downCount = 0, failCount = 0;
-
       for (var i = 0; i < STOCKS.length; i++) {
         var s = STOCKS[i];
         if (!document.getElementById('price-' + s.ticker)) continue;
@@ -572,45 +728,24 @@
         var priceEl  = document.getElementById('price-'  + s.ticker);
         var changeEl = document.getElementById('change-' + s.ticker);
         if (!priceEl) continue;
-
         if (result.ok) {
           priceEl.textContent = '$' + result.price.toFixed(2);
           priceEl.classList.remove('loading');
-          if (result.change >= 0) {
-            changeEl.textContent = '▲ +' + result.pct.toFixed(2) + '%';
-            changeEl.className = 'stock-change up';
-            upCount++;
-          } else {
-            changeEl.textContent = '▼ ' + result.pct.toFixed(2) + '%';
-            changeEl.className = 'stock-change down';
-            downCount++;
-          }
-        } else {
-          priceEl.textContent = '오류';
-          changeEl.textContent = '재시도';
-          changeEl.className = 'stock-change flat';
-          failCount++;
-        }
+          if (result.change >= 0) { changeEl.textContent = '▲ +' + result.pct.toFixed(2) + '%'; changeEl.className = 'stock-change up'; upCount++; }
+          else { changeEl.textContent = '▼ ' + result.pct.toFixed(2) + '%'; changeEl.className = 'stock-change down'; downCount++; }
+        } else { priceEl.textContent = '오류'; changeEl.textContent = '재시도'; changeEl.className = 'stock-change flat'; failCount++; }
       }
-
       document.getElementById('stat-up').textContent   = upCount + '개';
       document.getElementById('stat-down').textContent = downCount + '개';
       document.getElementById('total-change-val').textContent = upCount + '↑  ' + downCount + '↓';
       var pctEl = document.getElementById('total-change-pct');
       pctEl.textContent = '상승 ' + upCount + '개 · 하락 ' + downCount + '개';
       pctEl.className = 'summary-change ' + (upCount >= downCount ? 'up' : 'down');
-
       btn.disabled = false;
       btn.innerHTML = '🔄 주가 갱신';
-
       var now = new Date();
-      document.getElementById('last-update').textContent =
-        '마지막 갱신: ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-
-      if (failCount > 0) {
-        errBox.style.display = 'block';
-        errBox.textContent = '⚠️ ' + failCount + '개 종목을 불러오지 못했어요. 다시 눌러보세요.';
-      }
+      document.getElementById('last-update').textContent = '마지막 갱신: ' + now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      if (failCount > 0) { errBox.style.display = 'block'; errBox.textContent = '⚠️ ' + failCount + '개 종목을 불러오지 못했어요. 다시 눌러보세요.'; }
     }
 
     renderStockCards();
