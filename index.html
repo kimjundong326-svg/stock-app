@@ -346,6 +346,54 @@
     </div>
   </div>
 
+  <!-- ════ 뉴스 섹션 (탭 전환용) ════ -->
+  <div id="news-section" style="display:none; padding: 0 20px;">
+
+    <!-- GitHub PAT 설정 카드 -->
+    <div id="pat-setup-card" style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:20px; padding:20px; margin:16px 0; display:none;">
+      <div style="font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">GitHub 토큰 설정</div>
+      <div style="font-size:13px; color:#6b7280; margin-bottom:12px;">GitHub Personal Access Token을 입력하면<br>앱에서 바로 뉴스 알림을 실행할 수 있어요.</div>
+      <input id="pat-input" type="password" placeholder="ghp_xxxxxxxxxxxx"
+        style="width:100%; padding:12px 14px; border:1.5px solid #e5e7eb; border-radius:12px; font-size:14px; outline:none; margin-bottom:10px;"
+        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e5e7eb'" />
+      <button onclick="savePAT()"
+        style="width:100%; padding:13px; background:#2563eb; border:none; border-radius:12px; color:#fff; font-size:15px; font-weight:700; cursor:pointer;">
+        저장하기
+      </button>
+    </div>
+
+    <!-- 실행 버튼 카드 -->
+    <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:20px; padding:20px; margin:16px 0;">
+      <div style="font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">SeekingAlpha 뉴스 알림</div>
+      <div style="font-size:13px; color:#9ca3af; margin-bottom:16px;">워치리스트 종목 뉴스를 분석해서 텔레그램으로 전송해요</div>
+
+      <button id="run-news-btn" onclick="runNewsAlert()"
+        style="width:100%; padding:14px; background:#2563eb; border:none; border-radius:14px; color:#fff; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; -webkit-tap-highlight-color:transparent;">
+        ⚡ 뉴스 알림 지금 실행
+      </button>
+
+      <div id="news-run-status" style="text-align:center; font-size:12px; color:#9ca3af; margin-top:10px;"></div>
+    </div>
+
+    <!-- 마지막 실행 결과 -->
+    <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:20px; padding:20px; margin-bottom:16px;">
+      <div style="font-size:13px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">최근 실행 기록</div>
+      <div id="recent-runs">
+        <div style="font-size:13px; color:#9ca3af; text-align:center; padding:20px 0;">불러오는 중...</div>
+      </div>
+      <button onclick="loadRecentRuns()"
+        style="width:100%; padding:11px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; color:#6b7280; font-size:13px; font-weight:600; cursor:pointer; margin-top:12px;">
+        🔄 새로고침
+      </button>
+    </div>
+
+    <!-- 토큰 변경 버튼 -->
+    <button onclick="showPATSetup()"
+      style="width:100%; padding:11px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; color:#9ca3af; font-size:12px; cursor:pointer; margin-bottom:20px;">
+      🔑 GitHub 토큰 변경
+    </button>
+  </div>
+
   <!-- 추가 팝업 -->
   <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
     <div class="modal">
@@ -805,6 +853,199 @@
     }
 
     renderStockCards();
+
+    // ════ 탭 전환 ════
+    var currentTab = 'watchlist';
+    document.querySelectorAll('.tab').forEach(function(tab, idx) {
+      tab.addEventListener('touchend', function() {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        if (idx === 0) {
+          currentTab = 'watchlist';
+          document.getElementById('stock-list').parentElement.style.display = 'block';
+          document.getElementById('news-section').style.display = 'none';
+          // 갱신버튼/요약카드 보이기
+          document.getElementById('refresh-btn').style.display = 'flex';
+          document.querySelector('.last-update').style.display = 'block';
+          document.querySelector('.summary-card').style.display = 'block';
+          document.querySelector('.section-header').style.display = 'flex';
+          document.getElementById('stock-list').style.display = 'flex';
+        } else if (idx === 1) {
+          currentTab = 'news';
+          document.getElementById('refresh-btn').style.display = 'none';
+          document.querySelector('.last-update').style.display = 'none';
+          document.querySelector('.summary-card').style.display = 'none';
+          document.querySelector('.section-header').style.display = 'none';
+          document.getElementById('stock-list').style.display = 'none';
+          document.getElementById('news-section').style.display = 'block';
+          initNewsTab();
+        }
+      });
+    });
+
+    // ════ 뉴스 탭 기능 ════
+    var GITHUB_OWNER = 'kimjundong326-svg';
+    var GITHUB_REPO  = 'sa-news-alert';
+    var WORKFLOW_ID  = null; // 자동으로 찾아서 설정됨
+
+    // 워크플로우 파일명 자동 검색
+    async function findWorkflowId(pat) {
+      try {
+        var res = await fetch(
+          'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/actions/workflows',
+          { headers: { 'Authorization': 'token ' + pat, 'Accept': 'application/vnd.github.v3+json' } }
+        );
+        if (!res.ok) return null;
+        var data = await res.json();
+        // "SeekingAlpha 뉴스 알림" 워크플로우 찾기
+        var wf = data.workflows.find(function(w) {
+          return w.name.includes('뉴스') || w.name.includes('SeekingAlpha') || w.name.includes('news');
+        });
+        return wf ? wf.path.split('/').pop() : (data.workflows[0] ? data.workflows[0].path.split('/').pop() : null);
+      } catch(e) { return null; }
+    }
+
+    function loadPAT() {
+      try { return localStorage.getItem('github_pat') || ''; } catch(e) { return ''; }
+    }
+    function savePAT() {
+      var pat = document.getElementById('pat-input').value.trim();
+      if (!pat) { alert('토큰을 입력해주세요'); return; }
+      try { localStorage.setItem('github_pat', pat); } catch(e) {}
+      document.getElementById('pat-setup-card').style.display = 'none';
+      document.getElementById('news-run-status').textContent = '✅ 토큰 저장됨';
+      loadRecentRuns();
+    }
+    function showPATSetup() {
+      document.getElementById('pat-setup-card').style.display = 'block';
+      document.getElementById('pat-input').value = loadPAT();
+    }
+
+    function initNewsTab() {
+      var pat = loadPAT();
+      if (!pat) {
+        document.getElementById('pat-setup-card').style.display = 'block';
+      } else {
+        document.getElementById('pat-setup-card').style.display = 'none';
+        loadRecentRuns();
+      }
+    }
+
+    // 워크플로우 실행
+    async function runNewsAlert() {
+      var pat = loadPAT();
+      if (!pat) { showPATSetup(); return; }
+
+      var btn = document.getElementById('run-news-btn');
+      var status = document.getElementById('news-run-status');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinning">⚡</span> 실행 중...';
+      status.textContent = '';
+
+      try {
+        // 워크플로우 파일명 자동 검색
+        if (!WORKFLOW_ID) {
+          WORKFLOW_ID = await findWorkflowId(pat);
+          if (!WORKFLOW_ID) {
+            status.textContent = '❌ 워크플로우를 찾지 못했어요.';
+            status.style.color = '#dc2626';
+            btn.disabled = false;
+            btn.innerHTML = '⚡ 뉴스 알림 지금 실행';
+            return;
+          }
+        }
+        var res = await fetch(
+          'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/actions/workflows/' + WORKFLOW_ID + '/dispatches',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': 'token ' + pat,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ref: 'main' })
+          }
+        );
+
+        if (res.status === 204) {
+          status.textContent = '✅ 실행 시작! 텔레그램을 확인해보세요 (약 3분 소요)';
+          status.style.color = '#16a34a';
+          // 3초 후 실행 기록 새로고침
+          setTimeout(loadRecentRuns, 3000);
+        } else if (res.status === 401) {
+          status.textContent = '❌ 토큰이 잘못됐어요. 다시 설정해주세요.';
+          status.style.color = '#dc2626';
+          showPATSetup();
+        } else {
+          status.textContent = '❌ 오류 발생 (status: ' + res.status + ')';
+          status.style.color = '#dc2626';
+        }
+      } catch(e) {
+        status.textContent = '❌ 네트워크 오류. 다시 시도해주세요.';
+        status.style.color = '#dc2626';
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '⚡ 뉴스 알림 지금 실행';
+    }
+
+    // 최근 실행 기록 불러오기
+    async function loadRecentRuns() {
+      var pat = loadPAT();
+      if (!pat) return;
+
+      var container = document.getElementById('recent-runs');
+      container.innerHTML = '<div style="font-size:13px; color:#9ca3af; text-align:center; padding:16px;">불러오는 중...</div>';
+
+      try {
+        var res = await fetch(
+          'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/actions/runs?per_page=5',
+          {
+            headers: {
+              'Authorization': 'token ' + pat,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          }
+        );
+
+        if (!res.ok) { container.innerHTML = '<div style="font-size:13px;color:#dc2626;text-align:center;padding:16px;">불러오기 실패</div>'; return; }
+
+        var data = await res.json();
+        var runs = data.workflow_runs || [];
+
+        if (runs.length === 0) {
+          container.innerHTML = '<div style="font-size:13px;color:#9ca3af;text-align:center;padding:16px;">실행 기록 없음</div>';
+          return;
+        }
+
+        container.innerHTML = '';
+        runs.slice(0, 5).forEach(function(run) {
+          var statusIcon = run.conclusion === 'success' ? '✅'
+            : run.conclusion === 'failure' ? '❌'
+            : run.status === 'in_progress' ? '🔄'
+            : '⏳';
+
+          var dateStr = new Date(run.created_at).toLocaleString('ko-KR', {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+
+          var item = document.createElement('div');
+          item.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f3f4f6;';
+          item.innerHTML =
+            '<span style="font-size:18px;">' + statusIcon + '</span>' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:13px; font-weight:600;">' + (run.name || 'SeekingAlpha 뉴스 알림') + '</div>' +
+              '<div style="font-size:11px; color:#9ca3af; margin-top:2px;">' + dateStr + '</div>' +
+            '</div>' +
+            '<div style="font-size:11px; color:#9ca3af;">' + (run.run_number ? '#' + run.run_number : '') + '</div>';
+          container.appendChild(item);
+        });
+
+      } catch(e) {
+        container.innerHTML = '<div style="font-size:13px;color:#dc2626;text-align:center;padding:16px;">오류 발생</div>';
+      }
+    }
+
   </script>
 
 </body>
