@@ -587,17 +587,25 @@
 
           // 카드 탭 → 상세 이동 (편집 모드 아닐 때만)
           // iOS 홈화면 웹앱에서 click 대신 touchend 사용
+          // 탭 감지: touchstart 위치와 touchend 위치 차이가 작을 때만 탭으로 인식
+          var touchStartX = 0, touchStartY = 0;
+          card.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+          }, { passive: true });
+
           card.addEventListener('touchend', function(e) {
             if (isEditMode) return;
-            // 드래그 핸들, 삭제 버튼 터치는 무시
             var tgt = e.target;
-            if (tgt.classList.contains('drag-handle')) return;
-            if (tgt.classList.contains('delete-btn')) return;
-            if (tgt.closest('.drag-handle')) return;
-            if (tgt.closest('.delete-btn')) return;
-            e.preventDefault();
-            openDetail(stock.ticker, stock.name);
-          });
+            if (tgt.classList.contains('drag-handle') || tgt.closest('.drag-handle')) return;
+            if (tgt.classList.contains('delete-btn') || tgt.closest('.delete-btn')) return;
+            // 이동 거리가 10px 이하일 때만 탭으로 인식
+            var dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+            var dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+            if (dx < 10 && dy < 10) {
+              openDetail(stock.ticker, stock.name);
+            }
+          }, { passive: true });
 
           list.appendChild(card);
 
