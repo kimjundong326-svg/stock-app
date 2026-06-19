@@ -474,9 +474,9 @@
   <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
     <div class="modal">
       <div class="modal-title">종목 추가</div>
-      <div class="modal-sub">티커 심볼을 입력하세요 (예: TSLA, AAPL)</div>
+      <div class="modal-sub">미국: TSLA, AAPL / 한국: 005930, 000660</div>
       <input class="modal-input" id="ticker-input" placeholder="티커 입력..." maxlength="6"
-        oninput="this.value=this.value.toUpperCase()"
+        oninput="this.value=this.value.replace(/[^0-9a-zA-Z.]/g,'').toUpperCase()"
         onkeydown="if(event.key==='Enter') confirmAdd()" />
       <div class="modal-error" id="modal-error"></div>
       <button class="modal-confirm" onclick="confirmAdd()">추가하기</button>
@@ -845,17 +845,27 @@
     function closeModalOutside(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
 
     async function confirmAdd() {
-      var ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+      var raw = document.getElementById('ticker-input').value.trim().toUpperCase();
       var errEl = document.getElementById('modal-error');
       errEl.style.display = 'none';
-      if (!ticker) { errEl.textContent = '티커를 입력해주세요.'; errEl.style.display = 'block'; return; }
+      if (!raw) { errEl.textContent = '티커를 입력해주세요.'; errEl.style.display = 'block'; return; }
+
+      // 한국 종목 자동 처리: 숫자 6자리면 .KS 자동 추가
+      var ticker = raw;
+      if (/^[0-9]{6}$/.test(raw)) {
+        ticker = raw + '.KS';
+      }
+
       for (var i = 0; i < STOCKS.length; i++) {
         if (STOCKS[i].ticker === ticker) { errEl.textContent = '이미 워치리스트에 있어요!'; errEl.style.display = 'block'; return; }
       }
       errEl.textContent = '확인 중...'; errEl.style.display = 'block'; errEl.style.color = 'var(--subtext)';
       var name = await fetchStockName(ticker);
-      if (!name) { errEl.textContent = '종목을 찾을 수 없어요.'; errEl.style.display = 'block'; errEl.style.color = 'var(--red)'; return; }
-      STOCKS.push({ ticker: ticker, name: name, iconClass: ICON_MAP[ticker] || 'icon-default' });
+      if (!name) { errEl.textContent = '종목을 찾을 수 없어요. 티커를 다시 확인해주세요.'; errEl.style.display = 'block'; errEl.style.color = 'var(--red)'; return; }
+
+      // 한국 종목 여부 체크
+      var isKorean = ticker.endsWith('.KS') || ticker.endsWith('.KQ');
+      STOCKS.push({ ticker: ticker, name: name, iconClass: ICON_MAP[ticker] || 'icon-default', isKorean: isKorean });
       saveStocks(); closeModal(); renderStockCards();
     }
 
@@ -894,7 +904,8 @@
           var prev  = meta.chartPreviousClose;
           var chg   = price - prev;
           var pct   = (chg / prev) * 100;
-          return { price: price, change: chg, pct: pct, ok: true };
+          var currency = meta.currency || 'USD';
+          return { price: price, change: chg, pct: pct, currency: currency, ok: true };
         } catch(e) {}
       }
       return { ok: false };
@@ -915,7 +926,13 @@
         var changeEl = document.getElementById('change-' + s.ticker);
         if (!priceEl) continue;
         if (result.ok) {
-          priceEl.textContent = '$' + result.price.toFixed(2);
+          // 원화(KRW)면 ₩ + 정수, 달러면 $ + 소수점
+          var isKRW = result.currency === 'KRW';
+          if (isKRW) {
+            priceEl.textContent = '₩' + Math.round(result.price).toLocaleString('ko-KR');
+          } else {
+            priceEl.textContent = '$' + result.price.toFixed(2);
+          }
           priceEl.classList.remove('loading');
           if (result.change >= 0) { changeEl.textContent = '▲ +' + result.pct.toFixed(2) + '%'; changeEl.className = 'stock-change up'; upCount++; }
           else { changeEl.textContent = '▼ ' + result.pct.toFixed(2) + '%'; changeEl.className = 'stock-change down'; downCount++; }
