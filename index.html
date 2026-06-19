@@ -166,6 +166,23 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
 .run-date { font-size: 11px; color: #8e8e93; }
 .run-num { font-size: 11px; color: #8e8e93; }
 
+/* ── 보유 정보 ── */
+.holding-section { margin: 0 16px 16px; background: #fff; border-radius: 14px; padding: 16px; }
+.holding-title { font-size: 13px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+.holding-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.holding-field { flex: 1; }
+.holding-label { font-size: 11px; color: #8e8e93; margin-bottom: 4px; }
+.holding-input { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e5ea; border-radius: 10px; font-size: 15px; font-weight: 600; outline: none; }
+.holding-input:focus { border-color: #007aff; }
+.holding-save-btn { width: 100%; padding: 12px; background: #007aff; border: none; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 4px; }
+.holding-result { margin-top: 14px; padding-top: 14px; border-top: 1px solid #f2f2f7; display: none; }
+.holding-result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hr-item {}
+.hr-label { font-size: 11px; color: #8e8e93; margin-bottom: 2px; }
+.hr-val { font-size: 17px; font-weight: 700; }
+.hr-val.up { color: #34c759; } .hr-val.down { color: #ff3b30; }
+.hr-full { grid-column: span 2; }
+
 /* ── 추가 팝업 ── */
 .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: flex-end; }
 .modal-bg.show { display: flex; }
@@ -308,6 +325,52 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
     <div class="d-stat"><div class="d-stat-label">거래량</div><div class="d-stat-val" id="d-vol">—</div></div>
     <div class="d-stat"><div class="d-stat-label">시가총액</div><div class="d-stat-val" id="d-mktcap">—</div></div>
     <div class="d-stat d-stat-full"><div class="d-stat-label">S&amp;P 500 순위</div><div class="d-stat-val" id="d-rank">—</div></div>
+  </div>
+
+  <!-- 보유 정보 섹션 -->
+  <div class="holding-section">
+    <div class="holding-title">💰 내 보유 정보</div>
+    <div class="holding-row">
+      <div class="holding-field">
+        <div class="holding-label">보유 수량</div>
+        <input class="holding-input" id="h-qty" type="number" placeholder="0" inputmode="decimal">
+      </div>
+      <div class="holding-field">
+        <div class="holding-label">평균 매수가</div>
+        <input class="holding-input" id="h-avg" type="number" placeholder="0.00" inputmode="decimal">
+      </div>
+    </div>
+    <button class="holding-save-btn" id="h-save-btn">수익률 계산</button>
+
+    <!-- 계산 결과 -->
+    <div class="holding-result" id="h-result">
+      <div class="holding-result-grid">
+        <div class="hr-item">
+          <div class="hr-label">평가금액</div>
+          <div class="hr-val" id="h-total">—</div>
+        </div>
+        <div class="hr-item">
+          <div class="hr-label">매수금액</div>
+          <div class="hr-val" id="h-cost">—</div>
+        </div>
+        <div class="hr-item">
+          <div class="hr-label">평가손익</div>
+          <div class="hr-val" id="h-pnl">—</div>
+        </div>
+        <div class="hr-item">
+          <div class="hr-label">수익률</div>
+          <div class="hr-val" id="h-pct">—</div>
+        </div>
+        <div class="hr-item hr-full">
+          <div class="hr-label">목표가 설정 (선택)</div>
+          <input class="holding-input" id="h-target" type="number" placeholder="목표 주가 입력..." inputmode="decimal" style="margin-top:4px;">
+        </div>
+        <div class="hr-item hr-full" id="h-target-result" style="display:none;">
+          <div class="hr-label">목표가까지</div>
+          <div class="hr-val" id="h-target-val">—</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -515,12 +578,90 @@ function openDetail(ticker, name) {
   document.getElementById('page-detail').classList.add('active');
   window.scrollTo(0,0);
 
+  // 보유 정보 로드
+  loadHoldingUI(ticker);
+
   // 데이터 로드
   loadChartData(ticker, '1d');
 }
 
 function closeDetail() {
   document.getElementById('page-detail').classList.remove('active');
+}
+
+// ════════════════════════════════════════
+// 보유 정보 저장/불러오기/계산
+// ════════════════════════════════════════
+function holdingKey(ticker) { return 'holding_' + ticker; }
+
+function loadHolding(ticker) {
+  try { var s = localStorage.getItem(holdingKey(ticker)); return s ? JSON.parse(s) : null; } catch(e) { return null; }
+}
+function saveHolding(ticker, qty, avg) {
+  try { localStorage.setItem(holdingKey(ticker), JSON.stringify({qty:qty, avg:avg})); } catch(e) {}
+}
+
+function calcHolding() {
+  var qty = parseFloat(document.getElementById('h-qty').value) || 0;
+  var avg = parseFloat(document.getElementById('h-avg').value) || 0;
+  if (!qty || !avg || !currentTicker) return;
+
+  // 현재가 가져오기
+  var sp = document.getElementById('sp-' + currentTicker);
+  var curPrice = sp ? parseFloat(sp.textContent.replace(/[^0-9.]/g,'')) : 0;
+  if (!curPrice) { alert('먼저 주가를 갱신해주세요'); return; }
+
+  var isKRW = sp && sp.textContent.includes('₩');
+  var sym = isKRW ? '₩' : '$';
+  var fmt = function(v) { return isKRW ? sym + Math.round(v).toLocaleString('ko-KR') : sym + v.toFixed(2); };
+
+  var total = curPrice * qty;   // 평가금액
+  var cost  = avg * qty;        // 매수금액
+  var pnl   = total - cost;     // 평가손익
+  var pct   = (pnl / cost) * 100; // 수익률
+
+  document.getElementById('h-total').textContent = fmt(total);
+  document.getElementById('h-cost').textContent  = fmt(cost);
+
+  var pnlEl = document.getElementById('h-pnl');
+  var pctEl = document.getElementById('h-pct');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + fmt(pnl);
+  pnlEl.className   = 'hr-val ' + (pnl >= 0 ? 'up' : 'down');
+  pctEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+  pctEl.className   = 'hr-val ' + (pct >= 0 ? 'up' : 'down');
+
+  document.getElementById('h-result').style.display = 'block';
+
+  // 목표가 계산
+  var target = parseFloat(document.getElementById('h-target').value) || 0;
+  var tr = document.getElementById('h-target-result');
+  if (target > 0) {
+    var targetPnl = (target - avg) * qty;
+    var targetPct = ((target - avg) / avg) * 100;
+    document.getElementById('h-target-val').textContent =
+      fmt(targetPnl) + '  (' + (targetPct >= 0 ? '+' : '') + targetPct.toFixed(2) + '%)';
+    document.getElementById('h-target-val').className = 'hr-val ' + (targetPnl >= 0 ? 'up' : 'down');
+    tr.style.display = 'block';
+  } else {
+    tr.style.display = 'none';
+  }
+
+  // 저장
+  saveHolding(currentTicker, qty, avg);
+}
+
+function loadHoldingUI(ticker) {
+  var h = loadHolding(ticker);
+  if (h) {
+    document.getElementById('h-qty').value = h.qty;
+    document.getElementById('h-avg').value = h.avg;
+  } else {
+    document.getElementById('h-qty').value = '';
+    document.getElementById('h-avg').value = '';
+  }
+  document.getElementById('h-target').value = '';
+  document.getElementById('h-result').style.display = 'none';
+  document.getElementById('h-target-result').style.display = 'none';
 }
 
 // ════════════════════════════════════════
@@ -883,6 +1024,10 @@ function bindEvents(){
     document.getElementById('pat-input').value=loadPAT();
     document.getElementById('pat-card').style.display='block';
   });
+
+  // 보유 정보 계산
+  document.getElementById('h-save-btn').addEventListener('click', calcHolding);
+  document.getElementById('h-target').addEventListener('change', calcHolding);
 
   // 지수 갱신
   document.getElementById('idx-refresh-btn').addEventListener('click', refreshIndices);
