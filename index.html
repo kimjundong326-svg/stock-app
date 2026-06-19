@@ -327,7 +327,7 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
     <div class="d-stat d-stat-full"><div class="d-stat-label">S&amp;P 500 순위</div><div class="d-stat-val" id="d-rank">—</div></div>
   </div>
 
-  <!-- 보유 정보 섹션 -->
+  <!-- 보유 정보 -->
   <div class="holding-section">
     <div class="holding-title">💰 내 보유 정보</div>
     <div class="holding-row">
@@ -341,37 +341,24 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
       </div>
     </div>
     <button class="holding-save-btn" id="h-save-btn">수익률 계산</button>
-
-    <!-- 계산 결과 -->
     <div class="holding-result" id="h-result">
       <div class="holding-result-grid">
-        <div class="hr-item">
-          <div class="hr-label">평가금액</div>
-          <div class="hr-val" id="h-total">—</div>
-        </div>
-        <div class="hr-item">
-          <div class="hr-label">매수금액</div>
-          <div class="hr-val" id="h-cost">—</div>
-        </div>
-        <div class="hr-item">
-          <div class="hr-label">평가손익</div>
-          <div class="hr-val" id="h-pnl">—</div>
-        </div>
-        <div class="hr-item">
-          <div class="hr-label">수익률</div>
-          <div class="hr-val" id="h-pct">—</div>
-        </div>
+        <div class="hr-item"><div class="hr-label">평가금액</div><div class="hr-val" id="h-total">—</div></div>
+        <div class="hr-item"><div class="hr-label">매수금액</div><div class="hr-val" id="h-cost">—</div></div>
+        <div class="hr-item"><div class="hr-label">평가손익</div><div class="hr-val" id="h-pnl">—</div></div>
+        <div class="hr-item"><div class="hr-label">수익률</div><div class="hr-val" id="h-pct">—</div></div>
         <div class="hr-item hr-full">
           <div class="hr-label">목표가 설정 (선택)</div>
           <input class="holding-input" id="h-target" type="number" placeholder="목표 주가 입력..." inputmode="decimal" style="margin-top:4px;">
         </div>
         <div class="hr-item hr-full" id="h-target-result" style="display:none;">
-          <div class="hr-label">목표가까지</div>
+          <div class="hr-label">목표가까지 예상 수익</div>
           <div class="hr-val" id="h-target-val">—</div>
         </div>
       </div>
     </div>
   </div>
+
 </div>
 
 <!-- ════ 추가 팝업 ════ -->
