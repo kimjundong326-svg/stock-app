@@ -588,11 +588,15 @@
           // 카드 탭 → 상세 이동 (편집 모드 아닐 때만)
           // iOS 홈화면 웹앱에서 click 대신 touchend 사용
           card.addEventListener('touchend', function(e) {
-            // 드래그 핸들 터치는 무시
-            if (e.target.classList.contains('drag-handle')) return;
-            // 삭제 버튼 터치는 무시
-            if (e.target.classList.contains('delete-btn')) return;
-            if (!isEditMode) openDetail(stock.ticker, stock.name);
+            if (isEditMode) return;
+            // 드래그 핸들, 삭제 버튼 터치는 무시
+            var tgt = e.target;
+            if (tgt.classList.contains('drag-handle')) return;
+            if (tgt.classList.contains('delete-btn')) return;
+            if (tgt.closest('.drag-handle')) return;
+            if (tgt.closest('.delete-btn')) return;
+            e.preventDefault();
+            openDetail(stock.ticker, stock.name);
           });
 
           list.appendChild(card);
