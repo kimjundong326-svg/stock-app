@@ -567,18 +567,23 @@
           card.id = 'card-' + stock.ticker;
           card.setAttribute('data-ticker', stock.ticker);
 
+          // 표시용 티커 (한국 종목은 .KS/.KQ 제거)
+          var displayTicker = stock.ticker.replace(/\.(KS|KQ)$/, '');
+          var iconFontSize = displayTicker.length > 4 ? '9px' : '11px';
+
+          var t = stock.ticker;
           card.innerHTML =
-            '<div class="delete-btn" onclick="event.stopPropagation();deleteStock(\'' + stock.ticker + '\')">×</div>' +
-            '<div class="stock-icon ' + iconClass + '">' + stock.ticker + '</div>' +
+            '<div class="delete-btn" onclick="event.stopPropagation();deleteStock(this)" data-del="' + t + '">×</div>' +
+            '<div class="stock-icon ' + iconClass + '" style="font-size:' + iconFontSize + '">' + displayTicker + '</div>' +
             '<div class="stock-info">' +
-              '<div class="stock-ticker">' + stock.ticker + '</div>' +
+              '<div class="stock-ticker">' + displayTicker + '</div>' +
               '<div class="stock-name">' + stock.name + '</div>' +
             '</div>' +
             '<div class="stock-price-wrap">' +
-              '<div class="stock-price loading" id="price-' + stock.ticker + '">—</div>' +
-              '<div class="stock-change flat" id="change-' + stock.ticker + '">갱신 전</div>' +
+              '<div class="stock-price loading" id="price-' + t + '">—</div>' +
+              '<div class="stock-change flat" id="change-' + t + '">갱신 전</div>' +
             '</div>' +
-            '<div class="drag-handle" id="handle-' + stock.ticker + '">⠿</div>';
+            '<div class="drag-handle" id="handle-' + t + '">⠿</div>';
 
           // 카드 탭 → 상세 이동 (편집 모드 아닐 때만)
           // iOS 홈화면 웹앱에서 click 대신 touchend 사용
@@ -783,7 +788,8 @@
       renderStockCards();
     }
 
-    function deleteStock(ticker) {
+    function deleteStock(btn) {
+      var ticker = btn.getAttribute('data-del');
       STOCKS = STOCKS.filter(function(s) { return s.ticker !== ticker; });
       saveStocks();
       renderStockCards();
