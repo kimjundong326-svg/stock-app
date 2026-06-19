@@ -449,9 +449,16 @@ function renderCards() {
   document.getElementById('sum-total').textContent = STOCKS.length + '개';
 
   STOCKS.forEach(function(stock) {
-    var disp = stock.ticker.replace(/\.(KS|KQ)$/, '');
+    var code = stock.ticker.replace(/\.(KS|KQ)$/, '');
+    var isKorean = stock.ticker.endsWith('.KS') || stock.ticker.endsWith('.KQ');
     var ic = IC_MAP[stock.ticker] || stock.ic || 'ic-default';
-    var fs = disp.length > 4 ? '9px' : '11px';
+    var fs = code.length > 4 ? '9px' : '11px';
+
+    // 한국 종목: 아이콘에 종목명 첫 글자, 표시는 종목명 우선
+    var iconText = isKorean ? stock.name.slice(0, 4) : code;
+    var iconFs = isKorean ? '9px' : fs;
+    var mainLabel = isKorean ? stock.name : code;   // 굵은 글씨
+    var subLabel  = isKorean ? code : stock.name;   // 작은 글씨
 
     var card = document.createElement('div');
     card.className = 'stock-card';
@@ -466,13 +473,13 @@ function renderCards() {
     // 아이콘
     var icon = document.createElement('div');
     icon.className = 's-icon ' + ic;
-    icon.style.fontSize = fs;
-    icon.textContent = disp;
+    icon.style.fontSize = iconFs;
+    icon.textContent = iconText;
 
     // 정보
     var info = document.createElement('div');
     info.className = 's-info';
-    info.innerHTML = '<div class="s-ticker">' + disp + '</div><div class="s-name">' + stock.name + '</div>';
+    info.innerHTML = '<div class="s-ticker">' + mainLabel + '</div><div class="s-name">' + subLabel + '</div>';
 
     // 가격
     var pw = document.createElement('div');
@@ -524,10 +531,12 @@ function renderCards() {
 function openDetail(ticker, name) {
   currentTicker = ticker;
   currentPeriod = '1d';
-  var disp = ticker.replace(/\.(KS|KQ)$/, '');
+  var code = ticker.replace(/\.(KS|KQ)$/, '');
+  var isKorean = ticker.endsWith('.KS') || ticker.endsWith('.KQ');
 
-  document.getElementById('d-ticker').textContent = disp;
-  document.getElementById('d-name').textContent = name;
+  // 한국 종목: 헤더에 종목명 크게, 종목코드 작게
+  document.getElementById('d-ticker').textContent = isKorean ? name : code;
+  document.getElementById('d-name').textContent   = isKorean ? code : name;
 
   // 현재 주가 복사
   var sp = document.getElementById('sp-' + ticker);
