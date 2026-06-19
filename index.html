@@ -327,7 +327,7 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
     <div class="d-stat"><div class="d-stat-label">52주 최저</div><div class="d-stat-val c-down" id="d-low52">—</div></div>
     <div class="d-stat"><div class="d-stat-label">거래량</div><div class="d-stat-val" id="d-vol">—</div></div>
     <div class="d-stat"><div class="d-stat-label">시가총액</div><div class="d-stat-val" id="d-mktcap">—</div></div>
-    <div class="d-stat d-stat-full"><div class="d-stat-label">S&amp;P 500 순위</div><div class="d-stat-val" id="d-rank">—</div></div>
+
   </div>
 
   <!-- 보유 정보 -->
@@ -404,7 +404,7 @@ var DEFAULT_STOCKS = [
 
 var IC_MAP = {NVDA:'ic-nvda',AVGO:'ic-avgo',MU:'ic-mu',VRT:'ic-vrt',CIEN:'ic-cien',FIX:'ic-fix',LITE:'ic-lite',AAOI:'ic-aaoi',SPCX:'ic-spcx'};
 
-var SP500 = {NVDA:3,AVGO:9,MU:51,VRT:120,CIEN:350,FIX:280,LITE:400,INTC:60,TSLA:7,AMD:28};
+
 var MKTCAP = {NVDA:2.8e12,AVGO:1.1e12,MU:1.3e11,VRT:4.5e10,CIEN:6e9,FIX:1.2e10,LITE:8.5e9,AAOI:1.5e9,INTC:9e10,TSLA:1.2e12};
 
 function loadStocks() {
@@ -550,18 +550,11 @@ function openDetail(ticker, name) {
   dc.className = 'd-change ' + (sc && sc.classList.contains('up') ? 'badge-up' : sc && sc.classList.contains('down') ? 'badge-down' : 'badge-flat');
 
   // 지표 초기화
-  ['d-open','d-prev','d-high52','d-low52','d-vol','d-mktcap','d-rank'].forEach(function(id){
+  ['d-open','d-prev','d-high52','d-low52','d-vol','d-mktcap'].forEach(function(id){
     document.getElementById(id).textContent = '—';
   });
 
-  // S&P500 순위 즉시 표시
-  if (SP500[ticker]) {
-    document.getElementById('d-rank').textContent = 'S&P 500  ' + SP500[ticker] + '위';
-  } else if (ticker.endsWith('.KS') || ticker.endsWith('.KQ')) {
-    document.getElementById('d-rank').textContent = 'S&P 500 미포함 (한국)';
-  } else {
-    document.getElementById('d-rank').textContent = '데이터 없음';
-  }
+
 
   // 시가총액 즉시 표시
   if (MKTCAP[ticker]) {
