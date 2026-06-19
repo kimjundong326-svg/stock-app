@@ -102,6 +102,12 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
 .edit-mode .del-btn { display: flex; }
 .drag-handle { display: none; color: #c7c7cc; font-size: 20px; padding-left: 8px; flex-shrink: 0; cursor: grab; }
 .edit-mode .drag-handle { display: flex; align-items: center; }
+.detail-arrow-btn {
+  background: none; border: none; font-size: 24px; color: #c7c7cc;
+  cursor: pointer; padding: 0 0 0 4px; flex-shrink: 0; line-height: 1;
+  font-weight: 300;
+}
+.edit-mode .detail-arrow-btn { display: none; }
 
 /* ── 상세 페이지 ── */
 .detail-header { background: #fff; padding: 52px 16px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e5e5ea; position: sticky; top: 0; z-index: 10; }
@@ -423,6 +429,13 @@ function renderCards() {
     pw.className = 's-price-wrap';
     pw.innerHTML = '<div class="s-price" id="sp-' + stock.ticker + '">—</div><div class="s-change flat" id="sc-' + stock.ticker + '">갱신 전</div>';
 
+    // 상세 버튼
+    var detailBtn = document.createElement('button');
+    detailBtn.className = 'detail-arrow-btn';
+    detailBtn.textContent = '›';
+    detailBtn.dataset.ticker = stock.ticker;
+    detailBtn.dataset.name = stock.name;
+
     // 드래그 핸들
     var handle = document.createElement('div');
     handle.className = 'drag-handle';
@@ -432,6 +445,7 @@ function renderCards() {
     card.appendChild(icon);
     card.appendChild(info);
     card.appendChild(pw);
+    card.appendChild(detailBtn);
     card.appendChild(handle);
     list.appendChild(card);
 
@@ -444,12 +458,9 @@ function renderCards() {
       renderCards();
     });
 
-    // 카드 탭 → 상세 (클릭으로 처리)
-    card.addEventListener('click', function(e) {
-      if (editMode) return;
-      if (e.target.classList.contains('del-btn')) return;
-      if (e.target.classList.contains('drag-handle')) return;
-      openDetail(stock.ticker, stock.name);
+    // 상세 버튼 이벤트
+    detailBtn.addEventListener('click', function() {
+      openDetail(this.dataset.ticker, this.dataset.name);
     });
 
     // 드래그
