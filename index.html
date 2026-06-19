@@ -475,7 +475,8 @@
     <div class="modal">
       <div class="modal-title">종목 추가</div>
       <div class="modal-sub">미국: TSLA, AAPL / 한국: 005930, 000660</div>
-      <input class="modal-input" id="ticker-input" placeholder="티커 입력..." maxlength="6"
+      <input class="modal-input" id="ticker-input" placeholder="티커 입력..." maxlength="10"
+        inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
         oninput="this.value=this.value.replace(/[^0-9a-zA-Z.]/g,'').toUpperCase()"
         onkeydown="if(event.key==='Enter') confirmAdd()" />
       <div class="modal-error" id="modal-error"></div>
