@@ -145,10 +145,12 @@
     ════════════════════════════════ */
     #detail-page {
       display: none;
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      min-height: 100%;
-      background: #ffffff; z-index: 50;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #ffffff;
+      z-index: 200;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding-bottom: 40px;
     }
     #detail-page.open { display: block; }
@@ -634,10 +636,9 @@
       document.querySelectorAll('.chart-tab').forEach(function(t) { t.classList.remove('active'); });
       document.querySelectorAll('.chart-tab')[0].classList.add('active');
 
-      // 상세 페이지 열기
+      // 상세 페이지 열기 (main-page 건드리지 않고 detail-page만 위에 덮기)
       document.getElementById('detail-page').classList.add('open');
       window.scrollTo(0, 0);
-      document.getElementById('main-page').style.display = 'none';
 
       // 데이터 불러오기
       loadDetailData(ticker, '1d');
@@ -645,7 +646,6 @@
 
     function closeDetail() {
       document.getElementById('detail-page').classList.remove('open');
-      document.getElementById('main-page').style.display = 'block';
       window.scrollTo(0, 0);
     }
 
