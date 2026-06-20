@@ -186,6 +186,60 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
 .hr-val.up { color: #34c759; } .hr-val.down { color: #ff3b30; }
 .hr-full { grid-column: span 2; }
 
+/* ── 설정 페이지 ── */
+.set-section-title { font-size: 13px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.05em; margin: 20px 0 8px; }
+.set-card { background: #fff; border-radius: 14px; padding: 4px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.set-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; }
+.set-label { font-size: 15px; color: #1c1c1e; }
+.set-value { font-size: 15px; color: #8e8e93; }
+.set-divider { height: 1px; background: #f2f2f7; }
+.set-select { border: none; background: #f2f2f7; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #1c1c1e; outline: none; cursor: pointer; }
+.set-input { width: 100%; padding: 11px 14px; border: 1.5px solid #e5e5ea; border-radius: 10px; font-size: 14px; outline: none; margin: 4px 0 12px; }
+.set-input:focus { border-color: var(--accent, #007aff); }
+.set-btn { width: 100%; padding: 12px; background: var(--accent, #007aff); border: none; border-radius: 10px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; }
+.set-btn.danger { background: #ff3b30; }
+
+/* 토글 스위치 */
+.toggle { position: relative; display: inline-block; width: 51px; height: 31px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e5e5ea; border-radius: 31px; transition: 0.3s; }
+.toggle-slider:before { position: absolute; content: ''; height: 27px; width: 27px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+input:checked + .toggle-slider { background: var(--accent, #007aff); }
+input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+/* 색상 선택 */
+.color-picks { display: flex; gap: 10px; }
+.color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border 0.2s; }
+.color-dot.selected { border-color: #1c1c1e; }
+
+/* 다크 모드 */
+body.dark { background: #1c1c1e; color: #fff; }
+body.dark .header { background: #2c2c2e; border-bottom-color: #3a3a3c; }
+body.dark .header-sub { color: #8e8e93; }
+body.dark .summary { background: #2c2c2e; }
+body.dark .stock-card { background: #2c2c2e; }
+body.dark .s-ticker { color: #fff; }
+body.dark .set-card { background: #2c2c2e; }
+body.dark .set-label { color: #fff; }
+body.dark .set-section-title { color: #8e8e93; }
+body.dark .nav { background: rgba(28,28,30,0.95); border-top-color: #3a3a3c; }
+body.dark .nav-label { color: #8e8e93; }
+body.dark .idx-card { background: #2c2c2e; }
+body.dark .idx-name { color: #fff; }
+body.dark .modal { background: #2c2c2e; }
+body.dark .modal-title { color: #fff; }
+body.dark .modal-input { background: #3a3a3c; border-color: #3a3a3c; color: #fff; }
+body.dark .seg-btn { background: #3a3a3c; color: #8e8e93; }
+body.dark .d-stat { background: #2c2c2e; }
+body.dark .d-stat-label { color: #8e8e93; }
+body.dark .d-stat-val { color: #fff; }
+body.dark #page-detail { background: #1c1c1e; }
+body.dark .detail-header { background: #2c2c2e; border-bottom-color: #3a3a3c; }
+body.dark .holding-section { background: #2c2c2e; }
+body.dark .holding-label { color: #8e8e93; }
+body.dark .holding-input { background: #3a3a3c; border-color: #3a3a3c; color: #fff; }
+body.dark .set-input { background: #3a3a3c; border-color: #3a3a3c; color: #fff; }
+
 /* ── 추가 팝업 ── */
 .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: flex-end; }
 .modal-bg.show { display: flex; }
@@ -377,6 +431,85 @@ body { font-family: -apple-system, sans-serif; background: #f2f2f7; color: #1c1c
   </div>
 </div>
 
+<!-- ════ 설정 페이지 ════ -->
+<div id="page-settings" class="page">
+  <div class="header">
+    <div class="header-sub">준동의 포트폴리오</div>
+    <div class="header-title">JD <b>투자</b> 대시보드</div>
+  </div>
+
+  <div style="padding:0 16px;">
+
+    <!-- 테마 -->
+    <div class="set-section-title">🎨 테마</div>
+    <div class="set-card">
+      <div class="set-row">
+        <div class="set-label">다크 모드</div>
+        <label class="toggle">
+          <input type="checkbox" id="set-dark" onchange="applySettings()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="set-divider"></div>
+      <div class="set-row">
+        <div class="set-label">강조 색상</div>
+        <div class="color-picks" id="color-picks">
+          <div class="color-dot" data-color="#007aff" style="background:#007aff;" onclick="pickColor(this)"></div>
+          <div class="color-dot" data-color="#34c759" style="background:#34c759;" onclick="pickColor(this)"></div>
+          <div class="color-dot" data-color="#ff9500" style="background:#ff9500;" onclick="pickColor(this)"></div>
+          <div class="color-dot" data-color="#af52de" style="background:#af52de;" onclick="pickColor(this)"></div>
+          <div class="color-dot" data-color="#ff2d55" style="background:#ff2d55;" onclick="pickColor(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 표시 설정 -->
+    <div class="set-section-title">📊 표시 설정</div>
+    <div class="set-card">
+      <div class="set-row">
+        <div class="set-label">등락률 표시</div>
+        <select class="set-select" id="set-change-style" onchange="applySettings()">
+          <option value="arrow">▲ +2.95%</option>
+          <option value="plain">+2.95%</option>
+        </select>
+      </div>
+      <div class="set-divider"></div>
+      <div class="set-row">
+        <div class="set-label">카드 크기</div>
+        <select class="set-select" id="set-card-size" onchange="applySettings()">
+          <option value="normal">보통</option>
+          <option value="compact">작게</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GitHub 설정 -->
+    <div class="set-section-title">🔑 GitHub 설정</div>
+    <div class="set-card">
+      <div class="set-row">
+        <div class="set-label">Personal Access Token</div>
+      </div>
+      <input type="password" id="set-pat" class="set-input" placeholder="ghp_xxxxxxxxxxxx">
+      <button class="set-btn" onclick="saveSettingsPAT()">토큰 저장</button>
+    </div>
+
+    <!-- 데이터 -->
+    <div class="set-section-title">🗂 데이터</div>
+    <div class="set-card">
+      <button class="set-btn danger" onclick="resetWatchlist()">워치리스트 초기화</button>
+    </div>
+
+    <!-- 앱 정보 -->
+    <div class="set-section-title">ℹ️ 앱 정보</div>
+    <div class="set-card">
+      <div class="set-row"><div class="set-label">버전</div><div class="set-value">1.0.0</div></div>
+      <div class="set-divider"></div>
+      <div class="set-row"><div class="set-label">만든 사람</div><div class="set-value">준동 × Claude</div></div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ════ 하단 네비 ════ -->
 <nav class="nav">
   <div class="nav-item on" id="nav-home"><div class="nav-icon">📈</div><div class="nav-label">홈</div></div>
@@ -433,7 +566,7 @@ function init() {
 // 페이지 전환
 // ════════════════════════════════════════
 function showPage(id) {
-  ['page-home','page-news','page-index'].forEach(function(p) {
+  ['page-home','page-news','page-index','page-settings'].forEach(function(p) {
     document.getElementById(p).classList.remove('active');
   });
   ['nav-home','nav-news','nav-index','nav-memo','nav-settings'].forEach(function(n) {
@@ -579,6 +712,80 @@ function openDetail(ticker, name) {
 
 function closeDetail() {
   document.getElementById('page-detail').classList.remove('active');
+}
+
+// ════════════════════════════════════════
+// 설정
+// ════════════════════════════════════════
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem('app_settings') || '{}'); } catch(e) { return {}; }
+}
+function saveSettings(s) {
+  try { localStorage.setItem('app_settings', JSON.stringify(s)); } catch(e) {}
+}
+
+function applySettings() {
+  var s = {
+    dark: document.getElementById('set-dark').checked,
+    accent: document.querySelector('.color-dot.selected') ? document.querySelector('.color-dot.selected').dataset.color : '#007aff',
+    changeStyle: document.getElementById('set-change-style').value,
+    cardSize: document.getElementById('set-card-size').value
+  };
+  saveSettings(s);
+
+  // 다크모드
+  document.body.classList.toggle('dark', s.dark);
+
+  // 강조색
+  document.documentElement.style.setProperty('--accent', s.accent);
+  document.querySelectorAll('.refresh-btn, .modal-ok, .holding-save-btn, .set-btn:not(.danger), .seg-btn.on').forEach(function(el) {
+    el.style.background = s.accent;
+  });
+
+  // 카드 크기
+  document.querySelectorAll('.stock-card').forEach(function(c) {
+    c.style.padding = s.cardSize === 'compact' ? '10px 14px' : '14px';
+  });
+}
+
+function pickColor(dot) {
+  document.querySelectorAll('.color-dot').forEach(function(d) { d.classList.remove('selected'); });
+  dot.classList.add('selected');
+  applySettings();
+}
+
+function saveSettingsPAT() {
+  var v = document.getElementById('set-pat').value.trim();
+  if (!v) { alert('토큰을 입력해주세요'); return; }
+  try { localStorage.setItem('gh_pat', v); } catch(e) {}
+  alert('✅ 토큰이 저장됐어요!');
+}
+
+function resetWatchlist() {
+  if (!confirm('워치리스트를 초기화할까요? 되돌릴 수 없어요.')) return;
+  try { localStorage.removeItem('wl2'); } catch(e) {}
+  STOCKS = DEFAULT_STOCKS.map(function(s){ return Object.assign({},s); });
+  renderCards();
+  alert('✅ 초기화됐어요!');
+}
+
+function initSettings() {
+  var s = loadSettings();
+  document.getElementById('set-dark').checked = s.dark || false;
+  document.getElementById('set-change-style').value = s.changeStyle || 'arrow';
+  document.getElementById('set-card-size').value = s.cardSize || 'normal';
+  var pat = loadPAT();
+  if (pat) document.getElementById('set-pat').value = pat;
+
+  // 강조색 선택 표시
+  var accent = s.accent || '#007aff';
+  document.querySelectorAll('.color-dot').forEach(function(d) {
+    d.classList.toggle('selected', d.dataset.color === accent);
+  });
+
+  // 설정 적용
+  if (s.dark) document.body.classList.add('dark');
+  if (s.accent) document.documentElement.style.setProperty('--accent', s.accent);
 }
 
 // ════════════════════════════════════════
@@ -1020,6 +1227,17 @@ function bindEvents(){
   // 보유 정보 계산
   document.getElementById('h-save-btn').addEventListener('click', calcHolding);
   document.getElementById('h-target').addEventListener('change', calcHolding);
+
+  // 설정 탭
+  document.getElementById('nav-settings').addEventListener('click', function() {
+    showPage('page-settings');
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('on'); });
+    this.classList.add('on');
+    initSettings();
+  });
+
+  // 앱 시작 시 설정 적용
+  initSettings();
 
   // 지수 갱신
   document.getElementById('idx-refresh-btn').addEventListener('click', refreshIndices);
